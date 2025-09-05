@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leisure Suit Larry: AI-Powered Adventures</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            display: flex;
+            width: 95%;
+            max-width: 1600px;
+            height: 90vh;
+            gap: 20px;
+        }
+        
+        .game-container {
+            width: 70%;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+        
+        .game-header {
+            padding: 15px;
+            background: linear-gradient(to right, #ff6b6b, #ff8e53);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .game-stats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .stat {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .game-content {
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 10px;
+            padding: 20px;
+            overflow: hidden;
+            height: 100%;
+        }
+        
+        .scene-container {
+            background: #2c2c54;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            height: 100%;
+        }
+        
+        .scene {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect fill="%23333" width="100" height="100"/><path fill="%23444" d="M0 0L100 100M100 0L0 100"/></svg>');
+            background-size: cover;
+            position: relative;
+        }
+        
+        .character {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 150px;
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.5s ease;
+            z-index: 5;
+        }
+        
+        .character-head {
+            width: 50px;
+            height: 50px;
+            background: #f1c40f;
+            border-radius: 50%;
+            margin-top: -25px;
+            position: relative;
+        }
+        
+        .character-eyes {
+            position: absolute;
+            top: 15px;
+            left: 5px;
+            width: 40px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .eye {
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-radius: 50%;
+        }
+        
+        .npc {
+            position: absolute;
+            bottom: 100px;
+            right: 150px;
+            width: 80px;
+            height: 150px;
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.5s ease;
+            z-index: 5;
+        }
+        
+        .npc-head {
+            width: 50px;
+            height: 50px;
+            background: #e67e22;
+            border-radius: 50%;
+            margin-top: -25px;
+        }
+        
+        .interactive-item {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #9b59b6;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-size: 2rem;
+            z-index: 10;
+        }
+        
+        .interactive-item:hover {
+            transform: scale(1.1);
+        }
+        
+        .item-1 {
+            bottom: 180px;
+            left: 200px;
+            background: #2ecc71;
+        }
+        
+        .item-2 {
+            bottom: 180px;
+            left: 300px;
+            background: #e74c3c;
+        }
+        
+        .item-3 {
+            bottom: 280px;
+            left: 250px;
+            background: #f1c40f;
+        }
+        
+        .item-4 {
+            bottom: 220px;
+            right: 250px;
+            background: #3498db;
+        }
+        
+        .item-5 {
+            bottom: 320px;
+            right: 200px;
+            background: #9b59b6;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .inventory {
+            background: #40407a;
+            border-radius: 10px;
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .inventory-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .inventory-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+        
+        .inventory-item {
+            background: #706fd3;
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .inventory-item:hover {
+            transform: scale(1.05);
+            background: #5c5cb8;
+        }
+        
+        .inventory-item.selected {
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px #f1c40f;
+        }
+        
+        .dialog {
+            background: #40407a;
+            border-radius: 10px;
+            padding: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+        
+        .dialog-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .dialog-content {
+            background: rgba(0, 0, 0, 0.3);
+            flex: 1;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+        
+        .dialog-options {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .dialog-option {
+            background: #706fd3;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .dialog-option:hover {
+            background: #5c5cb8;
+        }
+        
+        .dialog-option.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .game-footer {
+            padding: 15px;
+            background: #2c2c54;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .message {
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            font-style: italic;
+            animation: fadeIn 0.3s ease;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            max-width: 100%;
+            word-wrap: break-word;
+        }
+        
+        .message.npc {
+            background: rgba(231, 76, 60, 0.2);
+            align-self: flex-start;
+        }
+        
+        .message.player {
+            background: rgba(52, 152, 219, 0.2);
+            align-self: flex-end;
+        }
+        
+        .location-name {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .mood-meter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 5px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mood-fill {
+            width: 60px;
+            height: 10px;
+            background: #e74c3c;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .mood-level {
+            height: 100%;
+            background: linear-gradient(to right, #2ecc71, #f1c40f, #e74c3c);
+            width: 50%;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(46, 204, 113, 0.9);
+            padding: 10px 20px;
+            border-radius: 5px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+        }
+        
+        /* NPC Comments Panel */
+        .comments-panel {
+            width: 30%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+        }
+        
+        .comments-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #ff6b6b;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        
+        .comments-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .comment {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #f1c40f;
+        }
+        
+        .comment-text {
+            font-style: italic;
+            line-height: 1.4;
+        }
+        
+        /* Scrollbar styling */
+        .comments-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .comments-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .comments-container::-webkit-scrollbar-thumb {
+            background: #ff6b6b;
+            border-radius: 10px;
+        }
+        
+        .comments-container::-webkit-scrollbar-thumb:hover {
+            background: #e74c3c;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .game-container, .comments-panel {
+                width: 100%;
+                height: 50vh;
+            }
+            
+            .comments-panel {
+                margin-top: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: 2fr 1fr;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+            }
+            
+            .inventory, .dialog {
+                flex: 1;
+            }
+            
+            .npc {
+                right: 50px;
+            }
+            
+            .mood-meter {
+                top: 60px;
+            }
+        }
+        
+        /* AI Controls */
+        .ai-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 20;
+        }
+        
+        .ai-toggle {
+            background: #9b59b6;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="game-container">
+            <header class="game-header">
+                <div class="game-title">Leisure Suit Larry: AI-Powered Adventures</div>
+                <div class="game-stats">
+                    <div class="stat">Score: <span id="score-value">250</span></div>
+                    <div class="stat">Time: <span id="time-value">12:45</span></div>
+                </div>
+            </header>
+            
+            <main class="game-content">
+                <div class="scene-container">
+                    <div class="scene">
+                        <div class="location-name">Le Bar de l'Amour</div>
+                        
+                        <div class="mood-meter">
+                            <span>Mood:</span>
+                            <div class="mood-fill">
+                                <div class="mood-level" id="mood-level"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="character">
+                            <div class="character-head">
+                                <div class="character-eyes">
+                                    <div class="eye"></div>
+                                    <div class="eye"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="npc">
+                            <div class="npc-head"></div>
+                        </div>
+                        
+                        <div class="interactive-item item-1" data-item="briefcase">💼</div>
+                        <div class="interactive-item item-2" data-item="drink">🍸</div>
+                        <div class="interactive-item item-3" data-item="key">🔑</div>
+                        <div class="interactive-item item-4" data-item="flowers">💐</div>
+                        <div class="interactive-item item-5" data-item="perfume">🧴</div>
+                        
+                        <div class="ai-controls">
+                            <button class="ai-toggle" id="ai-toggle">AI Mode: ON</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar">
+                    <div class="inventory">
+                        <div class="inventory-title">Inventory</div>
+                        <div class="inventory-items">
+                            <div class="inventory-item" data-item="money">💵</div>
+                            <div class="inventory-item" data-item="phone">📱</div>
+                            <div class="inventory-item" data-item="carKeys">🚗</div>
+                            <div class="inventory-item" data-item="sunglasses">🕶️</div>
+                            <div class="inventory-item" data-item="condom">💋</div>
+                            <div class="inventory-item" data-item="ticket">🎫</div>
+                        </div>
+                    </div>
+                    
+                    <div class="dialog">
+                        <div class="dialog-title">Conversation</div>
+                        <div class="dialog-content" id="dialog-content">
+                            <p class="message npc">Eve: I'm waiting for someone who actually has something interesting to say.</p>
+                            <p class="message player">Larry: Well, I've been told I'm full of interesting... ideas.</p>
+                        </div>
+                        <div class="dialog-options" id="dialog-options">
+                            <div class="dialog-option" data-option="compliment">1. Compliment her appearance</div>
+                            <div class="dialog-option" data-option="drink">2. Offer a drink</div>
+                            <div class="dialog-option" data-option="wallet">3. Show off your wallet</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+            
+            <footer class="game-footer">
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="look-btn">Look</button>
+                    <button class="btn btn-primary" id="talk-btn">Talk</button>
+                    <button class="btn btn-primary" id="use-btn">Use</button>
+                    <button class="btn btn-primary" id="move-btn">Move</button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-success" id="save-btn">Save</button>
+                    <button class="btn btn-danger" id="load-btn">Load</button>
+                </div>
+            </footer>
+        </div>
+
+        <!-- NPC Comments Panel -->
+        <div class="comments-panel">
+            <div class="comments-title">NPC Comments</div>
+            <div class="comments-container" id="comments-container">
+                <div class="comment">
+                    <div class="comment-header">
+                        <span class="comment-npc">Eve</span>
+                        <span class="comment-time">12:30 PM</span>
+                    </div>
+                    <div class="comment-text">I wonder if he'll actually say something interesting for once.</div>
+                </div>
+                <div class="comment">
+                    <div class="comment-header">
+                        <span class="comment-npc">Bartender</span>
+                        <span class="comment-time">12:32 PM</span>
+                    </div>
+                    <div class="comment-text">Another one of those guys who thinks he's charming. I give him 5 minutes.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">Item added to inventory!</div>
+
+    <script>
+        // AI Text Generator using Markov Chains
+        class TextGenerator {
+            constructor() {
+                this.chain = {};
+                this.startWords = [];
+                this.endWords = new Set();
+            }
+            
+            // Train the generator with sample text
+            train(text) {
+                const sentences = text.split(/[.!?]/).filter(s => s.trim().length > 0);
+                
+                for (const sentence of sentences) {
+                    const words = sentence.trim().split(/\s+/).filter(w => w.length > 0);
+                    if (words.length < 2) continue;
+                    
+                    this.startWords.push(words[0]);
+                    this.endWords.add(words[words.length - 1]);
+                    
+                    for (let i = 0; i < words.length - 1; i++) {
+                        const currentWord = words[i];
+                        const nextWord = words[i + 1];
+                        
+                        if (!this.chain[currentWord]) {
+                            this.chain[currentWord] = [];
+                        }
+                        this.chain[currentWord].push(nextWord);
+                    }
+                }
+            }
+            
+            // Generate text based on input
+            generate(input = "", minLength = 5) {
+                let words = [];
+                
+                if (input && this.chain[input]) {
+                    // Start with input word
+                    words.push(input);
+                } else {
+                    // Start with a random word
+                    words.push(this.startWords[Math.floor(Math.random() * this.startWords.length)]);
+                }
+                
+                // Generate until we hit an end word or reach max length
+                let safety = 0;
+                while (safety++ < 50 && words.length < 25) {
+                    const lastWord = words[words.length - 1];
+                    
+                    if (this.chain[lastWord]) {
+                        const nextWords = this.chain[lastWord];
+                        const nextWord = nextWords[Math.floor(Math.random() * nextWords.length)];
+                        words.push(nextWord);
+                        
+                        if (this.endWords.has(nextWord) && words.length >= minLength) {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                
+                // Capitalize first letter and add period
+                const sentence = words.join(" ");
+                return sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";
+            }
+        }
+
+        // AI Response Generator
+        class ResponseGenerator {
+            constructor() {
+                this.textGenerator = new TextGenerator();
+                this.initializeTrainingData();
+            }
+            
+            initializeTrainingData() {
+                // Training data for the text generator
+                const trainingText = `
+                    Larry is a charming but clumsy guy who tries to impress women. 
+                    He often fails but sometimes succeeds with persistence. 
+                    The bar is fancy with dim lighting and expensive drinks. 
+                    Eve is a sophisticated woman who is hard to impress. 
+                    She likes thoughtful gestures and dislikes cheap tricks. 
+                    Flowers and perfume are good gifts that might win her over. 
+                    Money and flashy items are not impressive to someone like her. 
+                    The bartender is watching everything with amusement. 
+                    Other patrons are enjoying the entertainment Larry provides. 
+                    This place is called Le Bar de l'Amour which means The Bar of Love. 
+                    Larry wants to find romance but often settles for companionship. 
+                    His leisure suit is both iconic and ridiculous at the same time. 
+                    Modern dating is complicated with traditional dating apps. 
+                    Larry prefers the old fashioned approach of talking in person. 
+                    Sometimes his jokes fall flat and create awkward situations. 
+                    Other times his persistence pays off in unexpected ways. 
+                    The key to success is being genuine and not trying too hard. 
+                    Women appreciate honesty more than empty compliments. 
+                    Larry is learning this lesson slowly through experience. 
+                    Each interaction teaches him something new about relationships.
+                `;
+                
+                this.textGenerator.train(trainingText);
+            }
+            
+            // Generate a response based on context
+            generateResponse(context, mood, location, hasItem = null) {
+                let basePrompt = "";
+                
+                // Adjust based on NPC mood
+                if (mood > 70) {
+                    basePrompt = "interested positive";
+                } else if (mood > 40) {
+                    basePrompt = "neutral skeptical";
+                } else {
+                    basePrompt = "annoyed negative";
+                }
+                
+                // Adjust based on location
+                switch(location) {
+                    case "bar":
+                        basePrompt += " bar drink";
+                        break;
+                    case "hotelLobby":
+                        basePrompt += " hotel room";
+                        break;
+                    case "beach":
+                        basePrompt += " beach sun";
+                        break;
+                    case "casino":
+                        basePrompt += " casino gamble";
+                        break;
+                    case "restaurant":
+                        basePrompt += " restaurant food";
+                        break;
+                }
+                
+                // Adjust if player used an item
+                if (hasItem) {
+                    switch(hasItem) {
+                        case "flowers":
+                            basePrompt += " flowers romantic";
+                            break;
+                        case "perfume":
+                            basePrompt += " perfume scent";
+                            break;
+                        case "drink":
+                            basePrompt += " cocktail beverage";
+                            break;
+                        case "money":
+                            basePrompt += " money rich";
+                            break;
+                    }
+                }
+                
+                // Add context from the last player message
+                const playerWords = context.split(" ").slice(0, 3);
+                basePrompt += " " + playerWords.join(" ");
+                
+                return this.textGenerator.generate(basePrompt, 3);
+            }
+            
+            // Generate a comment based on the current situation
+            generateComment(npcName, context, mood, location) {
+                let basePrompt = npcName.toLowerCase();
+                
+                // Adjust based on NPC mood
+                if (mood > 70) {
+                    basePrompt += " positive impressed";
+                } else if (mood > 40) {
+                    basePrompt += " observing neutral";
+                } else {
+                    basePrompt += " negative unimpressed";
+                }
+                
+                // Add context from the current situation
+                const contextWords = context.split(" ").slice(0, 2);
+                basePrompt += " " + contextWords.join(" ");
+                
+                return this.textGenerator.generate(basePrompt, 3);
+            }
+            
+            // Generate a new scenario or location description
+            generateScenario(location) {
+                const prompts = {
+                    "bar": "fancy bar drinks atmosphere",
+                    "hotelLobby": "luxury hotel lobby reception",
+                    "beach": "sunny beach ocean waves",
+                    "casino": "casino games gambling luck",
+                    "restaurant": "restaurant food dining romantic"
+                };
+                
+                return this.textGenerator.generate(prompts[location] || "adventure", 5);
+            }
+        }
+
+        // Enhanced game state with AI
+        const gameState = {
+            score: 250,
+            currentScene: "bar",
+            inventory: ["money", "phone", "carKeys", "sunglasses", "condom", "ticket"],
+            currentDialog: 0,
+            npcMood: 50, // 0-100 scale
+            selectedItem: null,
+            gameTime: 0, // in seconds
+            locations: ["bar", "hotelLobby", "beach", "casino", "restaurant"],
+            currentLocation: 0,
+            itemLocations: {
+                briefcase: {x: 200, y: 180},
+                drink: {x: 300, y: 180},
+                key: {x: 250, y: 280},
+                flowers: {x: 400, y: 220},
+                perfume: {x: 350, y: 320}
+            },
+            dialogues: {
+                bar: [
+                    {npc: "Eve: I'm waiting for someone who actually has something interesting to say.", player: "Larry: Well, I've been told I'm full of interesting... ideas."},
+                    {npc: "Eve: *sigh* That's exactly what I was afraid of.", player: "Larry: Wait, I can do better! How about we start over?"},
+                    {npc: "Eve: Fine. One more chance. Impress me.", player: "Larry: Did it hurt when you fell from heaven? Because your face is a bit... asymmetrical."}
+                ],
+                hotelLobby: [
+                    {npc: "Receptionist: Do you have a reservation, sir?", player: "Larry: I have a reservation about this place, but not an actual reservation."},
+                    {npc: "Receptionist: *sigh* Sir, this is a luxury hotel, not a comedy club.", player: "Larry: Then why is your pricing so laughable?"}
+                ],
+                beach: [
+                    {npc: "Lifeguard: Sorry sir, this area is for guests only.", player: "Larry: But I'm a guest of humanity! Doesn't that count?"},
+                    {npc: "Lifeguard: No, it doesn't. You need a hotel keycard.", player: "Larry: What if I promise not to drown? That should save you some work."}
+                ],
+                casino: [
+                    {npc: "Dealer: Place your bets, gentlemen.", player: "Larry: I'll bet my heart that the lady at the end of the bar will give me a chance!"},
+                    {npc: "Dealer: Sir, this is a blackjack table, not a dating service.", player: "Larry: Then why are you dealing me such bad cards in love?"}
+                ],
+                restaurant: [
+                    {npc: "Waiter: Your table is ready, sir. Just one?", player: "Larry: For now, but I'm optimistic about my chances with the lovely lady at the bar."},
+                    {npc: "Waiter: I see. Would you like to see the wine list?", player: "Larry: Just bring me something that says 'I'm classy but not trying too hard'."}
+                ]
+            },
+            dialogOptions: {
+                bar: [
+                    {text: "Compliment her appearance", moodEffect: 10, requiredItem: null, npcComment: "He tried a compliment. At least he noticed something besides himself."},
+                    {text: "Offer a drink", moodEffect: 5, requiredItem: null, npcComment: "A drink offer. How original. At least it's something."},
+                    {text: "Show off your wallet", moodEffect: -5, requiredItem: "money", npcComment: "Is he really trying to impress me with money? How tacky."},
+                    {text: "Offer your sunglasses", moodEffect: 8, requiredItem: "sunglasses", npcComment: "Sunglasses indoors? He thinks he's so cool."},
+                    {text: "Suggest going for a drive", moodEffect: 15, requiredItem: "carKeys", npcComment: "A drive? That could be... slightly less boring than this bar."},
+                    {text: "Offer flowers", moodEffect: 20, requiredItem: "flowers", npcComment: "Flowers? That's actually... sweet. Who is this guy?"},
+                    {text: "Give her perfume", moodEffect: 25, requiredItem: "perfume", npcComment: "My favorite perfume! How did he know? Maybe he's not completely clueless."}
+                ],
+                hotelLobby: [
+                    {text: "Ask for the best room", moodEffect: 0, requiredItem: null, npcComment: "The penthouse? Does he look like he can afford that?"},
+                    {text: "Compliment the decor", moodEffect: 5, requiredItem: null, npcComment: "He noticed the marble. Maybe he has some taste after all."},
+                    {text: "Flash your money", moodEffect: -10, requiredItem: "money", npcComment: "Ugh, he's one of those 'money solves everything' types."},
+                    {text: "Ask about room service", moodEffect: 3, requiredItem: null, npcComment: "At least he's thinking about practical matters."}
+                ],
+                beach: [
+                    {text: "Offer to put sunscreen on her", moodEffect: -15, requiredItem: null, npcComment: "Eww, no. Just no. That's creepy."},
+                    {text: "Comment on the weather", moodEffect: 2, requiredItem: null, npcComment: "Wow, 'nice weather we're having'. How original."},
+                    {text: "Show off your swimming skills", moodEffect: -5, requiredItem: null, npcComment: "He's pretending to know how to swim. This is pathetic."},
+                    {text: "Offer your sunglasses", moodEffect: 7, requiredItem: "sunglasses", npcComment: "At least he's thinking about sun protection. Practical."}
+                ]
+            },
+            npcComments: [
+                {npc: "Eve", text: "I wonder if he'll actually say something interesting for once.", timestamp: "12:30 PM"},
+                {npc: "Bartender", text: "Another one of those guys who thinks he's charming. I give him 5 minutes.", timestamp: "12:32 PM"}
+            ],
+            npcs: {
+                "Eve": {mood: 50, relationship: 0},
+                "Bartender": {mood: 30, relationship: 0},
+                "Receptionist": {mood: 40, relationship: 0},
+                "Lifeguard": {mood: 50, relationship: 0},
+                "Dealer": {mood: 40, relationship: 0},
+                "Waiter": {mood: 50, relationship: 0}
+            },
+            quests: [
+                {id: "get_drink", name: "Get a drink for Eve", completed: false, active: true},
+                {id: "find_flowers", name: "Find flowers to impress Eve", completed: false, active: false},
+                {id: "get_perfume", name: "Get Eve's favorite perfume", completed: false, active: false},
+                {id: "hotel_room", name: "Get a hotel room", completed: false, active: false}
+            ],
+            aiEngine: new ResponseGenerator(),
+            dynamicEvents: [],
+            lastAction: "",
+            lastPlayerMessage: "",
+            aiMode: true
+        };
+
+        // DOM elements
+        const interactiveItems = document.querySelectorAll('.interactive-item');
+        const inventoryItems = document.querySelectorAll('.inventory-item');
+        const dialogContent = document.getElementById('dialog-content');
+        const dialogOptionsContainer = document.getElementById('dialog-options');
+        const scoreElement = document.getElementById('score-value');
+        const timeElement = document.getElementById('time-value');
+        const moodElement = document.getElementById('mood-level');
+        const notification = document.getElementById('notification');
+        const character = document.querySelector('.character');
+        const npc = document.querySelector('.npc');
+        const commentsContainer = document.getElementById('comments-container');
+        const aiToggle = document.getElementById('ai-toggle');
+
+        // Action buttons
+        const lookBtn = document.getElementById('look-btn');
+        const talkBtn = document.getElementById('talk-btn');
+        const useBtn = document.getElementById('use-btn');
+        const moveBtn = document.getElementById('move-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const loadBtn = document.getElementById('load-btn');
+
+        // Initialize game
+        function initGame() {
+            console.log("Leisure Suit Larry: AI-Powered Adventures initialized!");
+            updateUI();
+            
+            // Start game timer
+            setInterval(() => {
+                gameState.gameTime++;
+                const minutes = Math.floor(gameState.gameTime / 60);
+                const seconds = gameState.gameTime % 60;
+                timeElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                
+                // Occasionally add new NPC comments (but less frequently)
+                if (gameState.gameTime % 60 === 0) {
+                    addContextualNPCComment();
+                }
+                
+                // Occasionally trigger dynamic events
+                if (gameState.gameTime % 120 === 0 && gameState.aiMode) {
+                    triggerDynamicEvent();
+                }
+            }, 1000);
+            
+            // Animate character entrance
+            character.style.transition = 'transform 1s';
+            character.style.transform = 'translateX(-50%) translateY(-20px)';
+            
+            setTimeout(() => {
+                character.style.transform = 'translateX(-50%)';
+            }, 1000);
+            
+            // Add initial AI-generated dialog
+            setTimeout(() => {
+                const aiResponse = gameState.aiEngine.generateResponse(
+                    "Larry arrives at the bar", 
+                    gameState.npcMood, 
+                    gameState.locations[gameState.currentLocation]
+                );
+                addMessage(`Eve: ${aiResponse}`, 'npc');
+            }, 2000);
+        }
+
+        // Trigger a dynamic event based on game state
+        function triggerDynamicEvent() {
+            if (Math.random() > 0.7) { // 30% chance of event
+                const events = [
+                    {
+                        type: "npc_arrival",
+                        message: "A new person enters the scene",
+                        effect: () => {
+                            const newNpcs = ["Jessica", "Danielle", "Ashley", "Nicole"];
+                            const npcName = newNpcs[Math.floor(Math.random() * newNpcs.length)];
+                            
+                            // Add to NPC list if not already there
+                            if (!gameState.npcs[npcName]) {
+                                gameState.npcs[npcName] = {mood: 40 + Math.floor(Math.random() * 30), relationship: 0};
+                            }
+                            
+                            const comment = gameState.aiEngine.generateComment(
+                                npcName,
+                                "entering the scene",
+                                gameState.npcs[npcName].mood,
+                                gameState.locations[gameState.currentLocation]
+                            );
+                            
+                            addNPCComment(npcName, comment, getCurrentTimestamp());
+                            addMessage(`${npcName} arrives and looks around.`, 'npc');
+                            
+                            return `${npcName} has arrived!`;
+                        }
+                    },
+                    {
+                        type: "item_discovery",
+                        message: "You notice something interesting",
+                        effect: () => {
+                            const newItems = ["necklace", "watch", "lipstick", "mirror"];
+                            const item = newItems[Math.floor(Math.random() * newItems.length)];
+                            
+                            // Create a new interactive item
+                            const scene = document.querySelector('.scene');
+                            const newItem = document.createElement('div');
+                            newItem.className = 'interactive-item';
+                            newItem.dataset.item = item;
+                            newItem.innerHTML = getItemEmoji(item);
+                            
+                            // Random position
+                            const x = 150 + Math.random() * 300;
+                            const y = 180 + Math.random() * 200;
+                            newItem.style.left = `${x}px`;
+                            newItem.style.bottom = `${y}px`;
+                            
+                            // Add click handler
+                            newItem.addEventListener('click', () => interactWithItem(newItem));
+                            
+                            scene.appendChild(newItem);
+                            
+                            // Remove after some time
+                            setTimeout(() => {
+                                if (newItem.parentNode) {
+                                    newItem.style.opacity = '0';
+                                    setTimeout(() => newItem.remove(), 1000);
+                                }
+                            }, 30000);
+                            
+                            return `You notice a ${item} nearby!`;
+                        }
+                    },
+                    {
+                        type: "mood_change",
+                        message: "The atmosphere shifts",
+                        effect: () => {
+                            const change = Math.random() > 0.5 ? 15 : -15;
+                            gameState.npcMood += change;
+                            gameState.npcMood = Math.max(0, Math.min(100, gameState.npcMood));
+                            
+                            updateUI();
+                            
+                            return change > 0 ? 
+                                "The mood seems to have improved!" : 
+                                "The atmosphere suddenly feels more tense.";
+                        }
+                    }
+                ];
+                
+                const event = events[Math.floor(Math.random() * events.length)];
+                showNotification(event.effect());
+                
+                // Add NPC comment about the event
+                addNPCComment("Eve", event.message, getCurrentTimestamp());
+            }
+        }
+
+        // Get current timestamp for comments
+        function getCurrentTimestamp() {
+            const minutes = Math.floor(gameState.gameTime / 60);
+            const seconds = gameState.gameTime % 60;
+            return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        // Update dialog options with AI-generated options
+        function updateDialogOptions() {
+            const location = gameState.locations[gameState.currentLocation];
+            let options = gameState.dialogOptions[location] || gameState.dialogOptions.bar;
+            
+            // Occasionally add AI-generated options if AI mode is on
+            if (gameState.aiMode && Math.random() > 0.5 && options.length < 6) {
+                const aiOption = {
+                    text: gameState.aiEngine.generateResponse(
+                        gameState.lastPlayerMessage || "conversation", 
+                        gameState.npcMood, 
+                        location
+                    ),
+                    moodEffect: Math.floor(Math.random() * 21) - 5, // -5 to +15
+                    requiredItem: null,
+                    npcComment: gameState.aiEngine.generateComment(
+                        "Eve", 
+                        "responding to option", 
+                        gameState.npcMood, 
+                        location
+                    )
+                };
+                
+                options.push(aiOption);
+            }
+            
+            dialogOptionsContainer.innerHTML = '';
+            
+            options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'dialog-option';
+                optionElement.textContent = `${index + 1}. ${option.text}`;
+                optionElement.dataset.option = option.text.toLowerCase().replace(/\s+/g, '_');
+                
+                // Check if player has required item
+                if (option.requiredItem && !gameState.inventory.includes(option.requiredItem)) {
+                    optionElement.classList.add('disabled');
+                } else {
+                    optionElement.addEventListener('click', () => selectDialogOption(option));
+                }
+                
+                dialogOptionsContainer.appendChild(optionElement);
+            });
+        }
+
+        // Handle dialog option selection with AI-generated responses
+        function selectDialogOption(option) {
+            // Update NPC mood
+            gameState.npcMood += option.moodEffect;
+            gameState.npcMood = Math.max(0, Math.min(100, gameState.npcMood));
+            
+            // Update score
+            gameState.score += 25;
+            
+            // Store last player message for context
+            gameState.lastPlayerMessage = option.text;
+            
+            // Add message to dialog
+            addMessage(`Larry: ${option.text}`, 'player');
+            
+            // Add NPC comment about the interaction
+            addNPCComment("Eve", option.npcComment, getCurrentTimestamp());
+            
+            // Generate AI response after a delay
+            setTimeout(() => {
+                let npcResponse;
+                
+                if (gameState.aiMode) {
+                    // Use AI to generate response
+                    npcResponse = gameState.aiEngine.generateResponse(
+                        option.text, 
+                        gameState.npcMood, 
+                        gameState.locations[gameState.currentLocation]
+                    );
+                } else {
+                    // Use pre-scripted response
+                    const location = gameState.locations[gameState.currentLocation];
+                    const dialogues = gameState.dialogues[location] || gameState.dialogues.bar;
+                    const dialogIndex = Math.min(gameState.currentDialog + 1, dialogues.length - 1);
+                    npcResponse = dialogues[dialogIndex].npc;
+                    gameState.currentDialog = dialogIndex;
+                }
+                
+                addMessage(npcResponse, 'npc');
+                
+                // Visual feedback based on mood change
+                if (option.moodEffect > 15) {
+                    npc.style.transform = 'translateY(-10px)';
+                    npc.style.boxShadow = '0 0 15px gold';
+                } else if (option.moodEffect > 5) {
+                    npc.style.transform = 'translateY(-5px)';
+                } else if (option.moodEffect < 0) {
+                    npc.style.transform = 'translateY(10px)';
+                    npc.style.boxShadow = '0 0 15px darkred';
+                }
+                
+                // Reset NPC position after animation
+                setTimeout(() => {
+                    npc.style.transform = 'translateY(0)';
+                    npc.style.boxShadow = 'none';
+                }, 500);
+            }, 1000);
+            
+            // Update UI
+            updateUI();
+            
+            // Check if any quests are completed
+            checkQuests(option);
+        }
+
+        // Add contextual NPC comment with AI generation
+        function addContextualNPCComment() {
+            const location = gameState.locations[gameState.currentLocation];
+            const currentNpcMood = gameState.npcMood;
+            
+            // Different NPCs based on location
+            let npcName;
+            
+            switch(location) {
+                case "bar":
+                    npcName = Math.random() > 0.5 ? "Eve" : "Bartender";
+                    break;
+                case "hotelLobby":
+                    npcName = "Receptionist";
+                    break;
+                case "beach":
+                    npcName = "Lifeguard";
+                    break;
+                case "casino":
+                    npcName = "Dealer";
+                    break;
+                case "restaurant":
+                    npcName = "Waiter";
+                    break;
+                default:
+                    npcName = "Eve";
+            }
+            
+            // Generate AI comment
+            const comment = gameState.aiEngine.generateComment(
+                npcName,
+                gameState.lastAction || "observing the situation",
+                gameState.npcs[npcName]?.mood || 50,
+                location
+            );
+            
+            // Add to UI
+            addNPCComment(npcName, comment, getCurrentTimestamp());
+        }
+
+        // Add NPC comment to the panel with context
+        function addNPCComment(npcName, text, timestamp) {
+            const commentElement = document.createElement('div');
+            commentElement.className = 'comment';
+            
+            const commentHeader = document.createElement('div');
+            commentHeader.className = 'comment-header';
+            commentHeader.innerHTML = `<span class="comment-npc">${npcName}</span><span class="comment-time">${timestamp}</span>`;
+            
+            const commentText = document.createElement('div');
+            commentText.className = 'comment-text';
+            commentText.textContent = text;
+            
+            commentElement.appendChild(commentHeader);
+            commentElement.appendChild(commentText);
+            
+            commentsContainer.appendChild(commentElement);
+            
+            // Scroll to bottom
+            commentsContainer.scrollTop = commentsContainer.scrollHeight;
+            
+            // Limit the number of comments to prevent overflow
+            const comments = commentsContainer.querySelectorAll('.comment');
+            if (comments.length > 20) {
+                comments[0].remove();
+            }
+        }
+
+        // Update UI based on game state
+        function updateUI() {
+            // Update score
+            scoreElement.textContent = gameState.score;
+            
+            // Update mood meter
+            moodElement.style.width = `${gameState.npcMood}%`;
+            
+            // Update mood color
+            if (gameState.npcMood > 70) {
+                moodElement.style.background = 'linear-gradient(to right, #2ecc71, #27ae60)';
+            } else if (gameState.npcMood > 30) {
+                moodElement.style.background = 'linear-gradient(to right, #f1c40f, #e67e22)';
+            } else {
+                moodElement.style.background = 'linear-gradient(to right, #e74c3c, #c0392b)';
+            }
+            
+            // Update dialog options based on current location
+            updateDialogOptions();
+            
+            // Update AI toggle button
+            aiToggle.textContent = `AI Mode: ${gameState.aiMode ? 'ON' : 'OFF'}`;
+            aiToggle.style.background = gameState.aiMode ? '#2ecc71' : '#e74c3c';
+        }
+
+        // Add message to dialog
+        function addMessage(text, type) {
+            const messageElement = document.createElement('p');
+            messageElement.className = `message ${type}`;
+            messageElement.textContent = text;
+            dialogContent.appendChild(messageElement);
+            
+            // Scroll to bottom
+            dialogContent.scrollTop = dialogContent.scrollHeight;
+            
+            // Limit the number of messages to prevent overflow
+            const messages = dialogContent.querySelectorAll('.message');
+            if (messages.length > 20) {
+                messages[0].remove();
+            }
+        }
+
+        // Show notification
+        function showNotification(text) {
+            notification.textContent = text;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 2000);
+        }
+
+        // Move to different location
+        function moveToLocation(direction) {
+            if (direction === 'next') {
+                gameState.currentLocation = (gameState.currentLocation + 1) % gameState.locations.length;
+            } else {
+                gameState.currentLocation = (gameState.currentLocation - 1 + gameState.locations.length) % gameState.locations.length;
+            }
+            
+            const location = gameState.locations[gameState.currentLocation];
+            document.querySelector('.location-name').textContent = getLocationName(location);
+            
+            // Clear dialog and load new conversation
+            dialogContent.innerHTML = '';
+            const dialogues = gameState.dialogues[location] || gameState.dialogues.bar;
+            
+            dialogues.forEach(dialog => {
+                addMessage(dialog.npc, 'npc');
+                addMessage(dialog.player, 'player');
+            });
+            
+            // Update dialog options
+            updateDialogOptions();
+            
+            // Add NPC comment about location change
+            const locationComments = {
+                bar: "He's back at the bar. Maybe he'll finally buy me a drink.",
+                hotelLobby: "Now he's in the lobby. Probably trying to get a room without a reservation.",
+                beach: "At the beach now. Hope he remembers sunscreen with that complexion.",
+                casino: "Trying his luck at the casino. I'd bet against him.",
+                restaurant: "At the restaurant. Hopefully he has better taste in food than in pickup lines."
+            };
+            
+            addNPCComment("Eve", locationComments[location] || "He moved again. Can't he stay in one place?", getCurrentTimestamp());
+            
+            showNotification(`Moved to ${getLocationName(location)}`);
+            
+            // Store last action
+            gameState.lastAction = "moving to " + location;
+        }
+
+        // Get display name for location
+        function getLocationName(locationKey) {
+            const names = {
+                bar: "Le Bar de l'Amour",
+                hotelLobby: "Hotel Lobby",
+                beach: "Sunset Beach",
+                casino: "Golden Casino",
+                restaurant: "La Romance Restaurant"
+            };
+            
+            return names[locationKey] || locationKey;
+        }
+
+        // Handle item interaction
+        function interactWithItem(item) {
+            // Visual feedback
+            item.style.transform = 'scale(1.2)';
+            item.style.boxShadow = '0 0 15px yellow';
+            
+            // Add to inventory if not already there
+            const itemType = item.dataset.item;
+            if (!gameState.inventory.includes(itemType)) {
+                gameState.inventory.push(itemType);
+                
+                // Create new inventory item
+                const newInventoryItem = document.createElement('div');
+                newInventoryItem.className = 'inventory-item';
+                newInventoryItem.dataset.item = itemType;
+                newInventoryItem.innerHTML = getItemEmoji(itemType);
+                newInventoryItem.addEventListener('click', () => selectInventoryItem(newInventoryItem));
+                
+                document.querySelector('.inventory-items').appendChild(newInventoryItem);
+                
+                showNotification(`You found a ${getItemName(itemType)}!`);
+                
+                // Add NPC comment about the item
+                const itemComments = {
+                    briefcase: "He found a briefcase. Probably empty.",
+                    drink: "He's got a drink. Maybe he'll offer it to someone.",
+                    key: "A key? I wonder what it opens. Probably nothing important.",
+                    money: "He's flashing his money again. How classy.",
+                    phone: "He's checking his phone. Probably no messages.",
+                    carKeys: "Car keys! Maybe he actually has a decent car for once.",
+                    sunglasses: "Sunglasses indoors. How stylish. Not.",
+                    flowers: "Flowers? That's actually sweet. Maybe he's not completely hopeless.",
+                    perfume: "Is that my favorite perfume? How did he know?",
+                    condom: "He's optimistic, I'll give him that.",
+                    ticket: "Tickets to something? Probably the wrong date."
+                };
+                
+                addNPCComment("Eve", itemComments[itemType] || "He found something. Probably worthless.", getCurrentTimestamp());
+                
+                // Update score
+                gameState.score += 50;
+                
+                // Activate quest if this is a quest item
+                if (itemType === "flowers") {
+                    const quest = gameState.quests.find(q => q.id === "find_flowers");
+                    if (quest && quest.active) {
+                        showNotification("You found flowers! Now offer them to Eve.");
+                    }
+                } else if (itemType === "perfume") {
+                    const quest = gameState.quests.find(q => q.id === "get_perfume");
+                    if (quest) quest.active = true;
+                    showNotification("You found perfume! This might impress Eve.");
+                }
+            } else {
+                showNotification(`You already have the ${getItemName(itemType)}`);
+            }
+            
+            // Remove item from scene after collection
+            setTimeout(() => {
+                item.style.opacity = '0';
+                setTimeout(() => {
+                    item.style.display = 'none';
+                }, 500);
+            }, 1000);
+            
+            // Store last action
+            gameState.lastAction = "finding " + itemType;
+            
+            // Update UI
+            updateUI();
+        }
+
+        // Get emoji for item
+        function getItemEmoji(itemType) {
+            const emojis = {
+                briefcase: '💼',
+                drink: '🍸',
+                key: '🔑',
+                money: '💵',
+                phone: '📱',
+                carKeys: '🚗',
+                sunglasses: '🕶️',
+                flowers: '💐',
+                perfume: '🧴',
+                condom: '💋',
+                ticket: '🎫',
+                necklace: '📿',
+                watch: '⌚',
+                lipstick: '💄',
+                mirror: ' mirror'
+            };
+            
+            return emojis[itemType] || '❓';
+        }
+
+        // Get display name for item
+        function getItemName(itemType) {
+            const names = {
+                briefcase: "Briefcase",
+                drink: "Exotic Drink",
+                key: "Mystery Key",
+                money: "Money",
+                phone: "Phone",
+                carKeys: "Car Keys",
+                sunglasses: "Sunglasses",
+                flowers: "Beautiful Flowers",
+                perfume: "Designer Perfume",
+                condom: "Protection",
+                ticket: "Concert Tickets",
+                necklace: "Shiny Necklace",
+                watch: "Gold Watch",
+                lipstick: "Lipstick",
+                mirror: "Hand Mirror"
+            };
+            
+            return names[itemType] || itemType;
+        }
+
+        // Select inventory item
+        function selectInventoryItem(item) {
+            // Deselect all items
+            document.querySelectorAll('.inventory-item').forEach(i => {
+                i.classList.remove('selected');
+            });
+            
+            // Select clicked item
+            item.classList.add('selected');
+            gameState.selectedItem = item.dataset.item;
+            
+            showNotification(`Selected ${getItemName(item.dataset.item)}`);
+            
+            // Store last action
+            gameState.lastAction = "selecting " + item.dataset.item;
+        }
+
+        // Use selected item
+        function useSelectedItem() {
+            if (!gameState.selectedItem) {
+                showNotification("You need to select an item first!");
+                return;
+            }
+            
+            const itemName = getItemName(gameState.selectedItem);
+            
+            // Different effects based on item
+            switch (gameState.selectedItem) {
+                case 'drink':
+                    addMessage("Larry: Would you like a drink? *offers drink*", 'player');
+                    setTimeout(() => {
+                        addMessage("Eve: Oh, my favorite! How did you know?", 'npc');
+                        gameState.npcMood += 15;
+                        
+                        // Add NPC comment
+                        addNPCComment("Eve", "He actually got my favorite drink. Maybe he's not completely clueless.", getCurrentTimestamp());
+                    }, 1000);
+                    break;
+                case 'sunglasses':
+                    addMessage("Larry: *puts on sunglasses* Cool, huh?", 'player');
+                    setTimeout(() => {
+                        addMessage("Eve: *chuckles* You're ridiculous!", 'npc');
+                        gameState.npcMood += 10;
+                        
+                        // Add NPC comment
+                        addNPCComment("Eve", "Sunglasses indoors? He thinks he's so cool. It's kind of cute actually.", getCurrentTimestamp());
+                    }, 1000);
+                    break;
+                case 'phone':
+                    addMessage("Larry: Let me take a selfie with you!", 'player');
+                    setTimeout(() => {
+                        addMessage("Eve: *sigh* Fine, but make it quick.", 'npc');
+                        gameState.npcMood += 5;
+                    }, 1000);
+                    break;
+                case 'flowers':
+                    addMessage("Larry: These are for you. *offers flowers*", 'player');
+                    setTimeout(() => {
+                        addMessage("Eve: They're beautiful! You remembered my favorites!", 'npc');
+                        gameState.npcMood += 20;
+                        
+                        // Add NPC comment
+                        addNPCComment("Eve", "He brought me flowers. My favorites. Maybe he's been paying attention.", getCurrentTimestamp());
+                    }, 1000);
+                    break;
+                case 'perfume':
+                    addMessage("Larry: I noticed you like this scent. *gives perfume*", 'player');
+                    setTimeout(() => {
+                        addMessage("Eve: This is my signature scent! How thoughtful!", 'npc');
+                        gameState.npcMood += 25;
+                        
+                        // Add NPC comment
+                        addNPCComment("Eve", "He got me my favorite perfume. That's actually really sweet.", getCurrentTimestamp());
+                    }, 1000);
+                    break;
+                default:
+                    addMessage(`Larry: *uses ${itemName}*`, 'player');
+                    setTimeout(() => {
+                        addMessage("Eve: What are you doing with that?", 'npc');
+                        gameState.npcMood -= 5;
+                    }, 1000);
+            }
+            
+            // Store last action
+            gameState.lastAction = "using " + gameState.selectedItem;
+            
+            // Update UI
+            updateUI();
+            
+            // Deselect item
+            gameState.selectedItem = null;
+            document.querySelectorAll('.inventory-item').forEach(i => {
+                i.classList.remove('selected');
+            });
+        }
+
+        // Check if any quests are completed
+        function checkQuests(option) {
+            if (option.requiredItem === "flowers" && gameState.inventory.includes("flowers")) {
+                completeQuest("find_flowers");
+            }
+            if (option.requiredItem === "perfume" && gameState.inventory.includes("perfume")) {
+                completeQuest("get_perfume");
+            }
+            if (option.text.toLowerCase().includes("drink")) {
+                completeQuest("get_drink");
+            }
+        }
+
+        // Complete a quest
+        function completeQuest(questId) {
+            const quest = gameState.quests.find(q => q.id === questId);
+            if (quest && !quest.completed) {
+                quest.completed = true;
+                gameState.score += 100;
+                showNotification(`Quest completed: ${quest.name}! +100 points`);
+                
+                // Activate next quest if applicable
+                if (questId === "get_drink") {
+                    const flowersQuest = gameState.quests.find(q => q.id === "find_flowers");
+                    if (flowersQuest) flowersQuest.active = true;
+                    showNotification("New quest: Find flowers to impress Eve");
+                }
+            }
+        }
+
+        // Toggle AI mode
+        function toggleAIMode() {
+            gameState.aiMode = !gameState.aiMode;
+            showNotification(`AI Mode ${gameState.aiMode ? 'Enabled' : 'Disabled'}`);
+            updateUI();
+        }
+
+        // Set up event listeners
+        function setupEventListeners() {
+            // Interactive items
+            interactiveItems.forEach(item => {
+                item.addEventListener('click', () => interactWithItem(item));
+            });
+            
+            // Action buttons
+            lookBtn.addEventListener('click', () => {
+                lookBtn.style.transform = 'translateY(2px)';
+                
+                // Generate AI description of the location
+                const description = gameState.aiEngine.generateScenario(
+                    gameState.locations[gameState.currentLocation]
+                );
+                
+                addMessage(`You look around. ${description}`, 'player');
+                
+                // Store last action for context
+                gameState.lastAction = "looking around";
+                
+                // Add NPC comment about looking around
+                addNPCComment("Eve", "noticing Larry looking around", gameState.npcMood, getCurrentTimestamp());
+                
+                setTimeout(() => {
+                    lookBtn.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            talkBtn.addEventListener('click', () => {
+                talkBtn.style.transform = 'translateY(2px)';
+                addMessage("Larry: So... come here often?", 'player');
+                setTimeout(() => {
+                    addMessage("Eve: *rolls eyes* Original.", 'npc');
+                    
+                    // Add NPC comment
+                    addNPCComment("Eve", "He used the 'come here often' line. How original.", getCurrentTimestamp());
+                    
+                    talkBtn.style.transform = 'translateY(0)';
+                }, 1000);
+                
+                // Store last action
+                gameState.lastAction = "initiating conversation";
+            });
+            
+            useBtn.addEventListener('click', () => {
+                useBtn.style.transform = 'translateY(2px)';
+                useSelectedItem();
+                setTimeout(() => {
+                    useBtn.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            moveBtn.addEventListener('click', () => {
+                moveBtn.style.transform = 'translateY(2px)';
+                moveToLocation('next');
+                setTimeout(() => {
+                    moveBtn.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            saveBtn.addEventListener('click', () => {
+                saveBtn.style.transform = 'translateY(2px)';
+                showNotification("Game saved!");
+                
+                // Add NPC comment about saving
+                addNPCComment("Eve", "He's saving the game. Not confident about his chances, I see.", getCurrentTimestamp());
+                
+                setTimeout(() => {
+                    saveBtn.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            loadBtn.addEventListener('click', () => {
+                loadBtn.style.transform = 'translateY(2px)';
+                showNotification("Game loaded!");
+                
+                // Add NPC comment about loading
+                addNPCComment("Eve", "He loaded a saved game. Trying to undo his mistakes, I guess.", getCurrentTimestamp());
+                
+                setTimeout(() => {
+                    loadBtn.style.transform = 'translateY(0)';
+                }, 100);
+            });
+            
+            // Inventory items
+            inventoryItems.forEach(item => {
+                item.addEventListener('click', () => selectInventoryItem(item));
+            });
+            
+            // AI toggle
+            aiToggle.addEventListener('click', toggleAIMode);
+        }
+
+        // Initialize the game when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            initGame();
+        });
+    </script>
+</body>
+</html>
