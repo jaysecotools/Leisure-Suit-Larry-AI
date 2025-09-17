@@ -38,6 +38,79 @@
             grid-template-rows: auto 1fr auto;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             overflow: hidden;
+            position: relative;
+        }
+        
+        .age-gate {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            gap: 20px;
+        }
+        
+        .age-gate h2 {
+            font-size: 2rem;
+            color: #ff6b6b;
+        }
+        
+        .age-gate p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            text-align: center;
+            line-height: 1.6;
+        }
+        
+        .age-gate-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .age-gate-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .age-confirm {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .age-deny {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .age-gate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .adult-content {
+            display: none;
+        }
+        
+        .adult-content.active {
+            display: block;
+            animation: fadeIn 1s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .game-header {
@@ -567,9 +640,58 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        
+        /* Additional responsive improvements */
+        @media (max-width: 992px) {
+            .game-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: 1fr 1fr;
+            }
+            
+            .sidebar {
+                flex-direction: row;
+            }
+            
+            .inventory, .dialog {
+                flex: 1;
+                min-height: 200px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .game-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .game-stats {
+                justify-content: center;
+            }
+            
+            .action-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Age verification gate -->
+    <div class="age-gate" id="age-gate">
+        <h2>Age Verification Required</h2>
+        <p>This game contains adult content, including mature themes, suggestive dialogue, and situations intended for players 18 years and older. By entering, you confirm you are at least 18 years old.</p>
+        <div class="age-gate-buttons">
+            <button class="age-gate-btn age-confirm" id="age-confirm">I am 18 or older</button>
+            <button class="age-gate-btn age-deny" id="age-deny">I am under 18</button>
+        </div>
+    </div>
+
     <div class="main-container">
         <div class="game-container">
             <header class="game-header">
@@ -685,208 +807,133 @@
     <div class="notification" id="notification">Item added to inventory!</div>
 
     <script>
-        // AI Text Generator using Markov Chains
+        // Enhanced AI Text Generator using a more sophisticated approach
         class TextGenerator {
             constructor() {
-                this.chain = {};
-                this.startWords = [];
-                this.endWords = new Set();
+                this.responses = {
+                    positive: [
+                        "I like your confidence. It's refreshing to meet someone who knows what they want.",
+                        "You're quite charming when you want to be. Tell me more about yourself.",
+                        "That was actually sweet. Maybe you're not like the other guys here.",
+                        "I appreciate a man who pays attention to details. You might just surprise me.",
+                        "You have a way with words. I'm intrigued to learn more about you."
+                    ],
+                    neutral: [
+                        "I've heard that line before. Try something more original.",
+                        "You're not the first to try that approach. What else have you got?",
+                        "That's one way to break the ice. Let's see if you can keep my attention.",
+                        "Interesting choice of words. I'm still deciding what to make of you.",
+                        "You're persistent, I'll give you that. But persistence alone won't win me over."
+                    ],
+                    negative: [
+                        "Seriously? That's the best you can come up with?",
+                        "I've had more stimulating conversations with a wall.",
+                        "If that's your idea of charm, you might want to reconsider your approach.",
+                        "I'm already bored. This isn't going how you hoped, is it?",
+                        "You're trying too hard. Maybe just be yourself for a change."
+                    ],
+                    adult: [
+                        "That's a bold approach. I like a man who isn't afraid to be direct.",
+                        "You're getting ahead of yourself, but I appreciate the confidence.",
+                        "Let's not get too carried away. We've only just met.",
+                        "You have quite the imagination. I wonder if you can back up those words.",
+                        "That's quite forward of you. Maybe tone it down a notch."
+                    ]
+                };
+                
+                this.contextMemory = [];
+                this.maxContextLength = 5;
             }
             
-            // Train the generator with sample text
-            train(text) {
-                const sentences = text.split(/[.!?]/).filter(s => s.trim().length > 0);
+            // Generate response based on mood, context, and optional adult level
+            generate(mood, context = "", adultLevel = 0) {
+                let responseSet;
                 
-                for (const sentence of sentences) {
-                    const words = sentence.trim().split(/\s+/).filter(w => w.length > 0);
-                    if (words.length < 2) continue;
-                    
-                    this.startWords.push(words[0]);
-                    this.endWords.add(words[words.length - 1]);
-                    
-                    for (let i = 0; i < words.length - 1; i++) {
-                        const currentWord = words[i];
-                        const nextWord = words[i + 1];
-                        
-                        if (!this.chain[currentWord]) {
-                            this.chain[currentWord] = [];
-                        }
-                        this.chain[currentWord].push(nextWord);
-                    }
-                }
-            }
-            
-            // Generate text based on input
-            generate(input = "", minLength = 5) {
-                let words = [];
-                
-                if (input && this.chain[input]) {
-                    // Start with input word
-                    words.push(input);
-                } else {
-                    // Start with a random word
-                    words.push(this.startWords[Math.floor(Math.random() * this.startWords.length)]);
-                }
-                
-                // Generate until we hit an end word or reach max length
-                let safety = 0;
-                while (safety++ < 50 && words.length < 25) {
-                    const lastWord = words[words.length - 1];
-                    
-                    if (this.chain[lastWord]) {
-                        const nextWords = this.chain[lastWord];
-                        const nextWord = nextWords[Math.floor(Math.random() * nextWords.length)];
-                        words.push(nextWord);
-                        
-                        if (this.endWords.has(nextWord) && words.length >= minLength) {
-                            break;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                
-                // Capitalize first letter and add period
-                const sentence = words.join(" ");
-                return sentence.charAt(0).toUpperCase() + sentence.slice(1) + ".";
-            }
-        }
-
-        // AI Response Generator
-        class ResponseGenerator {
-            constructor() {
-                this.textGenerator = new TextGenerator();
-                this.initializeTrainingData();
-            }
-            
-            initializeTrainingData() {
-                // Training data for the text generator
-                const trainingText = `
-                    Larry is a charming but clumsy guy who tries to impress women. 
-                    He often fails but sometimes succeeds with persistence. 
-                    The bar is fancy with dim lighting and expensive drinks. 
-                    Eve is a sophisticated woman who is hard to impress. 
-                    She likes thoughtful gestures and dislikes cheap tricks. 
-                    Flowers and perfume are good gifts that might win her over. 
-                    Money and flashy items are not impressive to someone like her. 
-                    The bartender is watching everything with amusement. 
-                    Other patrons are enjoying the entertainment Larry provides. 
-                    This place is called Le Bar de l'Amour which means The Bar of Love. 
-                    Larry wants to find romance but often settles for companionship. 
-                    His leisure suit is both iconic and ridiculous at the same time. 
-                    Modern dating is complicated with traditional dating apps. 
-                    Larry prefers the old fashioned approach of talking in person. 
-                    Sometimes his jokes fall flat and create awkward situations. 
-                    Other times his persistence pays off in unexpected ways. 
-                    The key to success is being genuine and not trying too hard. 
-                    Women appreciate honesty more than empty compliments. 
-                    Larry is learning this lesson slowly through experience. 
-                    Each interaction teaches him something new about relationships.
-                `;
-                
-                this.textGenerator.train(trainingText);
-            }
-            
-            // Generate a response based on context
-            generateResponse(context, mood, location, hasItem = null) {
-                let basePrompt = "";
-                
-                // Adjust based on NPC mood
                 if (mood > 70) {
-                    basePrompt = "interested positive";
+                    responseSet = this.responses.positive;
                 } else if (mood > 40) {
-                    basePrompt = "neutral skeptical";
+                    responseSet = this.responses.neutral;
                 } else {
-                    basePrompt = "annoyed negative";
+                    responseSet = this.responses.negative;
                 }
                 
-                // Adjust based on location
-                switch(location) {
-                    case "bar":
-                        basePrompt += " bar drink";
-                        break;
-                    case "hotelLobby":
-                        basePrompt += " hotel room";
-                        break;
-                    case "beach":
-                        basePrompt += " beach sun";
-                        break;
-                    case "casino":
-                        basePrompt += " casino gamble";
-                        break;
-                    case "restaurant":
-                        basePrompt += " restaurant food";
-                        break;
+                // Add adult responses if appropriate
+                if (adultLevel > 5 && mood > 60) {
+                    responseSet = [...responseSet, ...this.responses.adult];
                 }
                 
-                // Adjust if player used an item
-                if (hasItem) {
-                    switch(hasItem) {
-                        case "flowers":
-                            basePrompt += " flowers romantic";
-                            break;
-                        case "perfume":
-                            basePrompt += " perfume scent";
-                            break;
-                        case "drink":
-                            basePrompt += " cocktail beverage";
-                            break;
-                        case "money":
-                            basePrompt += " money rich";
-                            break;
+                // Store context for more coherent conversations
+                this.contextMemory.push(context);
+                if (this.contextMemory.length > this.maxContextLength) {
+                    this.contextMemory.shift();
+                }
+                
+                // Select a random response from the appropriate set
+                const response = responseSet[Math.floor(Math.random() * responseSet.length)];
+                
+                // 30% chance to reference previous context
+                if (Math.random() < 0.3 && this.contextMemory.length > 0 && this.contextMemory[this.contextMemory.length - 1]) {
+                    const contextReference = this.contextMemory[Math.floor(Math.random() * this.contextMemory.length)];
+                    if (contextReference) {
+                        return `${response} ${contextReference}`;
                     }
                 }
                 
-                // Add context from the last player message
-                const playerWords = context.split(" ").slice(0, 3);
-                basePrompt += " " + playerWords.join(" ");
-                
-                return this.textGenerator.generate(basePrompt, 3);
+                return response;
             }
             
             // Generate a comment based on the current situation
-            generateComment(npcName, context, mood, location) {
-                let basePrompt = npcName.toLowerCase();
-                
-                // Adjust based on NPC mood
-                if (mood > 70) {
-                    basePrompt += " positive impressed";
-                } else if (mood > 40) {
-                    basePrompt += " observing neutral";
-                } else {
-                    basePrompt += " negative unimpressed";
-                }
-                
-                // Add context from the current situation
-                const contextWords = context.split(" ").slice(0, 2);
-                basePrompt += " " + contextWords.join(" ");
-                
-                return this.textGenerator.generate(basePrompt, 3);
-            }
-            
-            // Generate a new scenario or location description
-            generateScenario(location) {
-                const prompts = {
-                    "bar": "fancy bar drinks atmosphere",
-                    "hotelLobby": "luxury hotel lobby reception",
-                    "beach": "sunny beach ocean waves",
-                    "casino": "casino games gambling luck",
-                    "restaurant": "restaurant food dining romantic"
+            generateComment(npcName, context, mood, location, adultLevel = 0) {
+                const templates = {
+                    Eve: [
+                        "I wonder if he'll actually say something interesting for once.",
+                        "Another cheesy line. How predictable.",
+                        "Maybe there's more to him than meets the eye.",
+                        "He's trying so hard to impress me. It's almost cute.",
+                        "I might give him a chance if he keeps this up.",
+                        "He's not like the others. There's something different about him."
+                    ],
+                    Bartender: [
+                        "This guy again. I give him 10 minutes before she shoots him down.",
+                        "He's actually doing better than most. Color me surprised.",
+                        "Same routine, different night. At least he's consistent.",
+                        "I've seen worse approaches. He might have a chance.",
+                        "She's actually smiling. That's a first for tonight.",
+                        "He's buying another drink. This could get interesting."
+                    ]
                 };
                 
-                return this.textGenerator.generate(prompts[location] || "adventure", 5);
+                // Add more adult comments if appropriate
+                if (adultLevel > 5) {
+                    templates.Eve.push(
+                        "He's got a certain charm when he's being bold.",
+                        "I like a man who knows what he wants and isn't afraid to ask for it.",
+                        "That forward approach might just work on me tonight.",
+                        "He's pushing boundaries, but in an intriguing way."
+                    );
+                    
+                    templates.Bartender.push(
+                        "Things are heating up over there. This might be a good night for both of them.",
+                        "He's making progress faster than most. She must be in a good mood.",
+                        "I haven't seen her this interested in a while. He must be doing something right.",
+                        "They're getting along better than expected. Might need to keep an eye on them."
+                    );
+                }
+                
+                const npcTemplates = templates[npcName] || templates.Eve;
+                return npcTemplates[Math.floor(Math.random() * npcTemplates.length)];
             }
         }
 
-        // Enhanced game state with AI
+        // Enhanced game state with better AI and adult content handling
         const gameState = {
             score: 250,
             currentScene: "bar",
             inventory: ["money", "phone", "carKeys", "sunglasses", "condom", "ticket"],
             currentDialog: 0,
-            npcMood: 50, // 0-100 scale
+            npcMood: 50,
             selectedItem: null,
-            gameTime: 0, // in seconds
+            gameTime: 0,
             locations: ["bar", "hotelLobby", "beach", "casino", "restaurant"],
             currentLocation: 0,
             itemLocations: {
@@ -921,25 +968,30 @@
             },
             dialogOptions: {
                 bar: [
-                    {text: "Compliment her appearance", moodEffect: 10, requiredItem: null, npcComment: "He tried a compliment. At least he noticed something besides himself."},
-                    {text: "Offer a drink", moodEffect: 5, requiredItem: null, npcComment: "A drink offer. How original. At least it's something."},
-                    {text: "Show off your wallet", moodEffect: -5, requiredItem: "money", npcComment: "Is he really trying to impress me with money? How tacky."},
-                    {text: "Offer your sunglasses", moodEffect: 8, requiredItem: "sunglasses", npcComment: "Sunglasses indoors? He thinks he's so cool."},
-                    {text: "Suggest going for a drive", moodEffect: 15, requiredItem: "carKeys", npcComment: "A drive? That could be... slightly less boring than this bar."},
-                    {text: "Offer flowers", moodEffect: 20, requiredItem: "flowers", npcComment: "Flowers? That's actually... sweet. Who is this guy?"},
-                    {text: "Give her perfume", moodEffect: 25, requiredItem: "perfume", npcComment: "My favorite perfume! How did he know? Maybe he's not completely clueless."}
+                    {text: "Compliment her appearance", moodEffect: 10, requiredItem: null, adultLevel: 0, npcComment: "He tried a compliment. At least he noticed something besides himself."},
+                    {text: "Offer a drink", moodEffect: 5, requiredItem: null, adultLevel: 0, npcComment: "A drink offer. How original. At least it's something."},
+                    {text: "Show off your wallet", moodEffect: -5, requiredItem: "money", adultLevel: 0, npcComment: "Is he really trying to impress me with money? How tacky."},
+                    {text: "Offer your sunglasses", moodEffect: 8, requiredItem: "sunglasses", adultLevel: 0, npcComment: "Sunglasses indoors? He thinks he's so cool."},
+                    {text: "Suggest going for a drive", moodEffect: 15, requiredItem: "carKeys", adultLevel: 2, npcComment: "A drive? That could be... slightly less boring than this bar."},
+                    {text: "Offer flowers", moodEffect: 20, requiredItem: "flowers", adultLevel: 1, npcComment: "Flowers? That's actually... sweet. Who is this guy?"},
+                    {text: "Give her perfume", moodEffect: 25, requiredItem: "perfume", adultLevel: 1, npcComment: "My favorite perfume! How did he know? Maybe he's not completely clueless."},
+                    {text: "Make a suggestive comment", moodEffect: -10, requiredItem: null, adultLevel: 4, npcComment: "Ugh, he went there. So predictable."},
+                    {text: "Ask if she comes here often", moodEffect: -5, requiredItem: null, adultLevel: 0, npcComment: "The oldest line in the book. How creative."},
+                    {text: "Comment on the atmosphere", moodEffect: 3, requiredItem: null, adultLevel: 0, npcComment: "At least he noticed the ambiance. Points for observation."}
                 ],
                 hotelLobby: [
-                    {text: "Ask for the best room", moodEffect: 0, requiredItem: null, npcComment: "The penthouse? Does he look like he can afford that?"},
-                    {text: "Compliment the decor", moodEffect: 5, requiredItem: null, npcComment: "He noticed the marble. Maybe he has some taste after all."},
-                    {text: "Flash your money", moodEffect: -10, requiredItem: "money", npcComment: "Ugh, he's one of those 'money solves everything' types."},
-                    {text: "Ask about room service", moodEffect: 3, requiredItem: null, npcComment: "At least he's thinking about practical matters."}
+                    {text: "Ask for the best room", moodEffect: 0, requiredItem: null, adultLevel: 3, npcComment: "The penthouse? Does he look like he can afford that?"},
+                    {text: "Compliment the decor", moodEffect: 5, requiredItem: null, adultLevel: 0, npcComment: "He noticed the marble. Maybe he has some taste after all."},
+                    {text: "Flash your money", moodEffect: -10, requiredItem: "money", adultLevel: 1, npcComment: "Ugh, he's one of those 'money solves everything' types."},
+                    {text: "Ask about room service", moodEffect: 3, requiredItem: null, adultLevel: 2, npcComment: "At least he's thinking about practical matters."},
+                    {text: "Inquire about late check-out", moodEffect: 2, requiredItem: null, adultLevel: 1, npcComment: "Planning ahead? That's unusual for him."}
                 ],
                 beach: [
-                    {text: "Offer to put sunscreen on her", moodEffect: -15, requiredItem: null, npcComment: "Eww, no. Just no. That's creepy."},
-                    {text: "Comment on the weather", moodEffect: 2, requiredItem: null, npcComment: "Wow, 'nice weather we're having'. How original."},
-                    {text: "Show off your swimming skills", moodEffect: -5, requiredItem: null, npcComment: "He's pretending to know how to swim. This is pathetic."},
-                    {text: "Offer your sunglasses", moodEffect: 7, requiredItem: "sunglasses", npcComment: "At least he's thinking about sun protection. Practical."}
+                    {text: "Offer to put sunscreen on her", moodEffect: -15, requiredItem: null, adultLevel: 4, npcComment: "Eww, no. Just no. That's creepy."},
+                    {text: "Comment on the weather", moodEffect: 2, requiredItem: null, adultLevel: 0, npcComment: "Wow, 'nice weather we're having'. How original."},
+                    {text: "Show off your swimming skills", moodEffect: -5, requiredItem: null, adultLevel: 0, npcComment: "He's pretending to know how to swim. This is pathetic."},
+                    {text: "Offer your sunglasses", moodEffect: 7, requiredItem: "sunglasses", adultLevel: 0, npcComment: "At least he's thinking about sun protection. Practical."},
+                    {text: "Suggest a walk along the beach", moodEffect: 10, requiredItem: null, adultLevel: 2, npcComment: "A walk on the beach? That's actually kind of romantic."}
                 ]
             },
             npcComments: [
@@ -947,12 +999,12 @@
                 {npc: "Bartender", text: "Another one of those guys who thinks he's charming. I give him 5 minutes.", timestamp: "12:32 PM"}
             ],
             npcs: {
-                "Eve": {mood: 50, relationship: 0},
-                "Bartender": {mood: 30, relationship: 0},
-                "Receptionist": {mood: 40, relationship: 0},
-                "Lifeguard": {mood: 50, relationship: 0},
-                "Dealer": {mood: 40, relationship: 0},
-                "Waiter": {mood: 50, relationship: 0}
+                "Eve": {mood: 50, relationship: 0, adultTolerance: 6},
+                "Bartender": {mood: 30, relationship: 0, adultTolerance: 8},
+                "Receptionist": {mood: 40, relationship: 0, adultTolerance: 5},
+                "Lifeguard": {mood: 50, relationship: 0, adultTolerance: 4},
+                "Dealer": {mood: 40, relationship: 0, adultTolerance: 7},
+                "Waiter": {mood: 50, relationship: 0, adultTolerance: 5}
             },
             quests: [
                 {id: "get_drink", name: "Get a drink for Eve", completed: false, active: true},
@@ -960,11 +1012,13 @@
                 {id: "get_perfume", name: "Get Eve's favorite perfume", completed: false, active: false},
                 {id: "hotel_room", name: "Get a hotel room", completed: false, active: false}
             ],
-            aiEngine: new ResponseGenerator(),
+            aiEngine: new TextGenerator(),
             dynamicEvents: [],
             lastAction: "",
             lastPlayerMessage: "",
-            aiMode: true
+            aiMode: true,
+            adultMode: false,
+            relationshipLevel: 0
         };
 
         // DOM elements
@@ -980,6 +1034,9 @@
         const npc = document.querySelector('.npc');
         const commentsContainer = document.getElementById('comments-container');
         const aiToggle = document.getElementById('ai-toggle');
+        const ageGate = document.getElementById('age-gate');
+        const ageConfirm = document.getElementById('age-confirm');
+        const ageDeny = document.getElementById('age-deny');
 
         // Action buttons
         const lookBtn = document.getElementById('look-btn');
@@ -1001,7 +1058,7 @@
                 const seconds = gameState.gameTime % 60;
                 timeElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
                 
-                // Occasionally add new NPC comments (but less frequently)
+                // Occasionally add new NPC comments
                 if (gameState.gameTime % 60 === 0) {
                     addContextualNPCComment();
                 }
@@ -1022,18 +1079,33 @@
             
             // Add initial AI-generated dialog
             setTimeout(() => {
-                const aiResponse = gameState.aiEngine.generateResponse(
-                    "Larry arrives at the bar", 
+                const aiResponse = gameState.aiEngine.generate(
                     gameState.npcMood, 
-                    gameState.locations[gameState.currentLocation]
+                    "Larry arrives at the bar",
+                    gameState.adultMode ? 3 : 0
                 );
                 addMessage(`Eve: ${aiResponse}`, 'npc');
             }, 2000);
         }
 
+        // Handle age verification
+        function setupAgeVerification() {
+            ageConfirm.addEventListener('click', () => {
+                gameState.adultMode = true;
+                ageGate.style.display = 'none';
+                showNotification("Adult content enabled. Enjoy the game!");
+                initGame();
+            });
+            
+            ageDeny.addEventListener('click', () => {
+                alert("You must be 18 or older to play this game. Redirecting...");
+                window.location.href = "https://www.google.com";
+            });
+        }
+
         // Trigger a dynamic event based on game state
         function triggerDynamicEvent() {
-            if (Math.random() > 0.7) { // 30% chance of event
+            if (Math.random() > 0.7) {
                 const events = [
                     {
                         type: "npc_arrival",
@@ -1042,16 +1114,20 @@
                             const newNpcs = ["Jessica", "Danielle", "Ashley", "Nicole"];
                             const npcName = newNpcs[Math.floor(Math.random() * newNpcs.length)];
                             
-                            // Add to NPC list if not already there
                             if (!gameState.npcs[npcName]) {
-                                gameState.npcs[npcName] = {mood: 40 + Math.floor(Math.random() * 30), relationship: 0};
+                                gameState.npcs[npcName] = {
+                                    mood: 40 + Math.floor(Math.random() * 30), 
+                                    relationship: 0,
+                                    adultTolerance: 4 + Math.floor(Math.random() * 4)
+                                };
                             }
                             
                             const comment = gameState.aiEngine.generateComment(
                                 npcName,
                                 "entering the scene",
                                 gameState.npcs[npcName].mood,
-                                gameState.locations[gameState.currentLocation]
+                                gameState.locations[gameState.currentLocation],
+                                gameState.adultMode ? 3 : 0
                             );
                             
                             addNPCComment(npcName, comment, getCurrentTimestamp());
@@ -1067,25 +1143,21 @@
                             const newItems = ["necklace", "watch", "lipstick", "mirror"];
                             const item = newItems[Math.floor(Math.random() * newItems.length)];
                             
-                            // Create a new interactive item
                             const scene = document.querySelector('.scene');
                             const newItem = document.createElement('div');
                             newItem.className = 'interactive-item';
                             newItem.dataset.item = item;
                             newItem.innerHTML = getItemEmoji(item);
                             
-                            // Random position
                             const x = 150 + Math.random() * 300;
                             const y = 180 + Math.random() * 200;
                             newItem.style.left = `${x}px`;
                             newItem.style.bottom = `${y}px`;
                             
-                            // Add click handler
                             newItem.addEventListener('click', () => interactWithItem(newItem));
                             
                             scene.appendChild(newItem);
                             
-                            // Remove after some time
                             setTimeout(() => {
                                 if (newItem.parentNode) {
                                     newItem.style.opacity = '0';
@@ -1116,7 +1188,6 @@
                 const event = events[Math.floor(Math.random() * events.length)];
                 showNotification(event.effect());
                 
-                // Add NPC comment about the event
                 addNPCComment("Eve", event.message, getCurrentTimestamp());
             }
         }
@@ -1133,21 +1204,28 @@
             const location = gameState.locations[gameState.currentLocation];
             let options = gameState.dialogOptions[location] || gameState.dialogOptions.bar;
             
+            // Filter options based on adult mode setting
+            if (!gameState.adultMode) {
+                options = options.filter(option => option.adultLevel < 3);
+            }
+            
             // Occasionally add AI-generated options if AI mode is on
             if (gameState.aiMode && Math.random() > 0.5 && options.length < 6) {
                 const aiOption = {
-                    text: gameState.aiEngine.generateResponse(
-                        gameState.lastPlayerMessage || "conversation", 
+                    text: gameState.aiEngine.generate(
                         gameState.npcMood, 
-                        location
+                        gameState.lastPlayerMessage || "conversation",
+                        gameState.adultMode ? 3 : 0
                     ),
-                    moodEffect: Math.floor(Math.random() * 21) - 5, // -5 to +15
+                    moodEffect: Math.floor(Math.random() * 21) - 5,
                     requiredItem: null,
+                    adultLevel: gameState.adultMode ? Math.floor(Math.random() * 3) : 0,
                     npcComment: gameState.aiEngine.generateComment(
                         "Eve", 
                         "responding to option", 
                         gameState.npcMood, 
-                        location
+                        gameState.locations[gameState.currentLocation],
+                        gameState.adultMode ? 3 : 0
                     )
                 };
                 
@@ -1175,6 +1253,15 @@
 
         // Handle dialog option selection with AI-generated responses
         function selectDialogOption(option) {
+            // Check if adult content is appropriate for current NPC
+            const currentNpc = "Eve"; // For simplicity, assuming Eve is the main NPC
+            if (option.adultLevel > gameState.npcs[currentNpc].adultTolerance) {
+                addMessage("Eve: I don't appreciate that kind of talk. Let's keep it respectful.", 'npc');
+                gameState.npcMood -= 10;
+                updateUI();
+                return;
+            }
+            
             // Update NPC mood
             gameState.npcMood += option.moodEffect;
             gameState.npcMood = Math.max(0, Math.min(100, gameState.npcMood));
@@ -1188,19 +1275,16 @@
             // Add message to dialog
             addMessage(`Larry: ${option.text}`, 'player');
             
-            // Add NPC comment about the interaction
-            addNPCComment("Eve", option.npcComment, getCurrentTimestamp());
-            
             // Generate AI response after a delay
             setTimeout(() => {
                 let npcResponse;
                 
                 if (gameState.aiMode) {
                     // Use AI to generate response
-                    npcResponse = gameState.aiEngine.generateResponse(
-                        option.text, 
+                    npcResponse = gameState.aiEngine.generate(
                         gameState.npcMood, 
-                        gameState.locations[gameState.currentLocation]
+                        option.text,
+                        gameState.adultMode ? option.adultLevel : 0
                     );
                 } else {
                     // Use pre-scripted response
@@ -1211,7 +1295,18 @@
                     gameState.currentDialog = dialogIndex;
                 }
                 
-                addMessage(npcResponse, 'npc');
+                addMessage(`Eve: ${npcResponse}`, 'npc');
+                
+                // Add NPC comment about the interaction
+                const npcComment = gameState.aiEngine.generateComment(
+                    "Eve",
+                    option.text,
+                    gameState.npcMood,
+                    gameState.locations[gameState.currentLocation],
+                    gameState.adultMode ? option.adultLevel : 0
+                );
+                
+                addNPCComment("Eve", npcComment, getCurrentTimestamp());
                 
                 // Visual feedback based on mood change
                 if (option.moodEffect > 15) {
@@ -1243,7 +1338,6 @@
             const location = gameState.locations[gameState.currentLocation];
             const currentNpcMood = gameState.npcMood;
             
-            // Different NPCs based on location
             let npcName;
             
             switch(location) {
@@ -1271,7 +1365,8 @@
                 npcName,
                 gameState.lastAction || "observing the situation",
                 gameState.npcs[npcName]?.mood || 50,
-                location
+                location,
+                gameState.adultMode ? 3 : 0
             );
             
             // Add to UI
@@ -1604,6 +1699,22 @@
                         addNPCComment("Eve", "He got me my favorite perfume. That's actually really sweet.", getCurrentTimestamp());
                     }, 1000);
                     break;
+                case 'condom':
+                    if (gameState.adultMode && gameState.npcMood > 70) {
+                        addMessage("Larry: *shows condom* I believe in being prepared for any possibility.", 'player');
+                        setTimeout(() => {
+                            addMessage("Eve: *smirks* Confident, aren't we? Let's see if you can back that up.", 'npc');
+                            gameState.npcMood += 5;
+                            gameState.relationshipLevel += 10;
+                        }, 1000);
+                    } else {
+                        addMessage("Larry: *shows condom* I believe in being prepared.", 'player');
+                        setTimeout(() => {
+                            addMessage("Eve: That's presumptuous. Let's focus on getting to know each other first.", 'npc');
+                            gameState.npcMood -= 10;
+                        }, 1000);
+                    }
+                    break;
                 default:
                     addMessage(`Larry: *uses ${itemName}*`, 'player');
                     setTimeout(() => {
@@ -1673,18 +1784,23 @@
             lookBtn.addEventListener('click', () => {
                 lookBtn.style.transform = 'translateY(2px)';
                 
-                // Generate AI description of the location
-                const description = gameState.aiEngine.generateScenario(
-                    gameState.locations[gameState.currentLocation]
-                );
+                // Generate description of the location
+                const descriptions = {
+                    bar: "The bar is dimly lit with a sophisticated atmosphere. Patrons are engaged in quiet conversations.",
+                    hotelLobby: "The hotel lobby is luxurious with marble floors and elegant decor. The reception desk is polished to a shine.",
+                    beach: "The beach is beautiful with golden sand and gentle waves. The sun is beginning to set.",
+                    casino: "The casino is bustling with activity. Slot machines ring and cards shuffle at the tables.",
+                    restaurant: "The restaurant is romantic with candlelit tables and soft music playing in the background."
+                };
                 
-                addMessage(`You look around. ${description}`, 'player');
+                const location = gameState.locations[gameState.currentLocation];
+                addMessage(`You look around. ${descriptions[location]}`, 'player');
                 
                 // Store last action for context
                 gameState.lastAction = "looking around";
                 
                 // Add NPC comment about looking around
-                addNPCComment("Eve", "noticing Larry looking around", gameState.npcMood, getCurrentTimestamp());
+                addNPCComment("Eve", "noticing Larry looking around", getCurrentTimestamp());
                 
                 setTimeout(() => {
                     lookBtn.style.transform = 'translateY(0)';
@@ -1758,8 +1874,16 @@
 
         // Initialize the game when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
+            setupAgeVerification();
             setupEventListeners();
-            initGame();
+            
+            // Only initialize game if age is verified
+            if (!gameState.adultMode) {
+                // Show age gate
+                ageGate.style.display = 'flex';
+            } else {
+                initGame();
+            }
         });
     </script>
 </body>
