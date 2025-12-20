@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leisure Suit Larry: AI Adventures</title>
     <style>
-        /* Reset & Base Styles */
+        /* ===== CSS RESET & BASE ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         :root {
@@ -18,15 +19,26 @@
             --primary-dark: #8e44ad;
             --secondary: #3498db;
             --success: #2ecc71;
+            --success-dark: #27ae60;
             --danger: #e74c3c;
+            --danger-dark: #c0392b;
             --warning: #f1c40f;
+            --warning-dark: #f39c12;
             --dark: #2c3e50;
+            --darker: #1a252f;
             --light: #ecf0f1;
             --surface: #34495e;
             --surface-light: #4a6583;
+            --surface-dark: #2c3e50;
             --text: #ffffff;
             --text-secondary: #bdc3c7;
             --adult: #e84393;
+            --adult-light: #fd79a8;
+            --adult-dark: #c44569;
+            --overlay: rgba(0, 0, 0, 0.85);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            --shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.4);
         }
 
         body {
@@ -35,16 +47,17 @@
             min-height: 100vh;
             padding: 10px;
             overflow-x: hidden;
+            background-attachment: fixed;
         }
 
-        /* Age Gate */
+        /* ===== AGE GATE ===== */
         .age-gate {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.98);
+            background: var(--overlay);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -52,12 +65,14 @@
             z-index: 1000;
             padding: 20px;
             text-align: center;
+            animation: fadeIn 0.5s ease;
         }
 
         .age-gate h1 {
             color: var(--warning);
             margin-bottom: 20px;
             font-size: clamp(1.8rem, 5vw, 2.5rem);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .age-gate p {
@@ -71,10 +86,20 @@
         .adult-warning {
             background: rgba(232, 67, 147, 0.2);
             border: 2px solid var(--adult);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 25px 0;
             max-width: 600px;
+            text-align: left;
+        }
+
+        .adult-warning ul {
+            margin: 10px 0 0 25px;
+            line-height: 1.8;
+        }
+
+        .adult-warning li {
+            margin-bottom: 5px;
         }
 
         .age-gate-buttons {
@@ -82,31 +107,48 @@
             flex-direction: column;
             gap: 15px;
             width: 100%;
-            max-width: 300px;
+            max-width: 350px;
+            margin-top: 10px;
         }
 
         .age-btn {
-            padding: 15px;
+            padding: 16px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
             width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
 
         .age-confirm {
-            background: linear-gradient(to right, var(--adult), #fd79a8);
+            background: linear-gradient(135deg, var(--adult), var(--adult-dark));
             color: white;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4);
+        }
+
+        .age-confirm:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(232, 67, 147, 0.6);
         }
 
         .age-deny {
-            background: linear-gradient(to right, var(--danger), #c0392b);
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
             color: white;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
         }
 
-        /* Main Container */
+        .age-deny:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.6);
+        }
+
+        /* ===== MAIN CONTAINER ===== */
         .main-container {
             display: flex;
             flex-direction: column;
@@ -121,7 +163,7 @@
             to { opacity: 1; }
         }
 
-        /* Header */
+        /* ===== HEADER ===== */
         .game-header {
             background: var(--surface);
             padding: 15px;
@@ -129,7 +171,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
             position: relative;
         }
 
@@ -155,6 +197,8 @@
             align-items: center;
             gap: 8px;
             font-size: 0.9rem;
+            min-width: 120px;
+            justify-content: center;
         }
 
         .stat-icon {
@@ -165,52 +209,59 @@
             position: absolute;
             top: 15px;
             right: 15px;
-            background: var(--adult);
+            background: linear-gradient(135deg, var(--adult), var(--adult-dark));
             color: white;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 0.7rem;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
             font-weight: bold;
             display: none;
+            animation: pulse 2s infinite;
+            box-shadow: 0 4px 15px rgba(232, 67, 147, 0.4);
         }
 
-        /* Quest Tracker */
+        /* ===== QUEST TRACKER ===== */
         .quest-tracker {
-            background: var(--surface-light);
+            background: var(--surface-dark);
             border-radius: 10px;
-            padding: 10px;
+            padding: 12px;
             margin-top: 10px;
             display: none;
+            border-left: 4px solid var(--warning);
         }
 
         .quest-title {
             color: var(--warning);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .quest-progress {
-            height: 8px;
-            background: var(--surface);
-            border-radius: 4px;
+            height: 10px;
+            background: var(--surface-light);
+            border-radius: 5px;
             overflow: hidden;
+            margin-bottom: 8px;
         }
 
         .quest-bar {
             height: 100%;
-            background: linear-gradient(to right, var(--success), var(--warning));
+            background: linear-gradient(90deg, var(--success), var(--warning));
             width: 0%;
-            transition: width 0.5s ease;
+            transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* Scene Container */
+        /* ===== SCENE CONTAINER ===== */
         .scene-container {
-            background: var(--dark);
+            background: var(--darker);
             border-radius: 15px;
             overflow: hidden;
             position: relative;
             min-height: 300px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
         }
 
         .scene {
@@ -225,14 +276,16 @@
             top: 15px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 8px 20px;
-            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 25px;
+            border-radius: 25px;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
             z-index: 10;
+            border: 2px solid var(--warning);
+            backdrop-filter: blur(5px);
         }
 
         .mood-meter {
@@ -240,30 +293,32 @@
             top: 15px;
             right: 15px;
             background: rgba(0, 0, 0, 0.7);
-            padding: 5px 10px;
-            border-radius: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 0.8rem;
             z-index: 10;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .mood-fill {
-            width: 50px;
-            height: 8px;
+            width: 60px;
+            height: 10px;
             background: var(--surface-light);
-            border-radius: 4px;
+            border-radius: 5px;
             overflow: hidden;
         }
 
         .mood-level {
             height: 100%;
-            background: linear-gradient(to right, var(--danger), var(--warning), var(--success));
+            background: linear-gradient(90deg, var(--danger), var(--warning), var(--success));
             transition: width 0.5s ease;
         }
 
-        /* Characters */
+        /* ===== CHARACTERS ===== */
         .character-container {
             position: absolute;
             bottom: 50px;
@@ -274,55 +329,79 @@
         }
 
         .character, .npc {
-            width: 60px;
-            height: 100px;
+            width: 70px;
+            height: 110px;
             position: relative;
-            transition: transform 0.3s ease;
+            transition: var(--transition);
+            cursor: pointer;
         }
 
         .character:hover, .npc:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
         }
 
         .character-body, .npc-body {
             width: 100%;
-            height: 80px;
-            background: linear-gradient(to bottom, var(--secondary), #2980b9);
+            height: 90px;
             border-radius: 10px 10px 0 0;
             position: absolute;
             bottom: 0;
         }
 
         .character-head, .npc-head {
-            width: 50px;
-            height: 50px;
-            background: var(--warning);
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             position: absolute;
-            top: -25px;
-            left: 5px;
+            top: -27px;
+            left: 7.5px;
         }
 
-        .npc-body {
-            background: linear-gradient(to bottom, var(--danger), #c0392b);
+        .character .character-body {
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
         }
 
-        .npc-head {
-            background: #e67e22;
+        .character .character-head {
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.4);
         }
 
-        /* Interactive Items */
+        .npc .npc-body {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .npc .npc-head {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
+        }
+
+        .character-tooltip, .npc-tooltip {
+            position: absolute;
+            bottom: -30px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.75rem;
+            padding: 4px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        /* ===== INTERACTIVE ITEMS ===== */
         .items-container {
             position: absolute;
             width: 100%;
-            height: calc(100% - 150px);
+            height: calc(100% - 160px);
             pointer-events: none;
+            overflow: visible;
         }
 
         .interactive-item {
             position: absolute;
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             background: var(--primary);
             border-radius: 12px;
             display: flex;
@@ -331,28 +410,67 @@
             font-size: 1.8rem;
             cursor: pointer;
             pointer-events: auto;
-            transition: all 0.3s;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: var(--transition);
+            box-shadow: var(--shadow);
             z-index: 20;
             animation: float 3s ease-in-out infinite;
+            will-change: transform;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            touch-action: manipulation;
+        }
+
+        .interactive-item:hover {
+            transform: scale(1.25) rotate(15deg);
+            box-shadow: var(--shadow-hover);
+            z-index: 100;
+            border-color: rgba(241, 196, 15, 0.6);
+        }
+
+        .interactive-item:active {
+            transform: scale(1.15) rotate(10deg);
+        }
+
+        .interactive-item.item-adult {
+            background: linear-gradient(135deg, var(--adult), var(--adult-dark));
+            border-color: rgba(232, 67, 147, 0.4);
+            box-shadow: 0 0 20px rgba(232, 67, 147, 0.5);
+        }
+
+        .interactive-item.item-adult:hover {
+            box-shadow: 0 0 30px rgba(232, 67, 147, 0.8);
+        }
+
+        .interactive-item.important {
+            animation: float 3s ease-in-out infinite, pulse-glow 2s ease-in-out infinite;
+        }
+
+        .interactive-item.collecting {
+            animation: collect 0.6s ease forwards !important;
+            pointer-events: none;
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(2deg); }
         }
 
-        .interactive-item:hover, .interactive-item:active {
-            transform: scale(1.2) rotate(10deg);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(241, 196, 15, 0.5); }
+            50% { box-shadow: 0 0 25px rgba(241, 196, 15, 0.8); }
         }
 
-        .item-adult {
-            background: var(--adult);
-            border: 2px solid #ff9ff3;
+        @keyframes collect {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.4) rotate(180deg); opacity: 0.7; }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; }
         }
 
-        /* Panels Container */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* ===== PANELS CONTAINER ===== */
         .panels-container {
             display: flex;
             flex-direction: column;
@@ -365,163 +483,15 @@
             }
         }
 
-.items-container {
-    position: absolute;
-    width: 100%;
-    height: calc(100% - 150px);
-    pointer-events: none;
-    overflow: visible; /* Ensure items aren't clipped */
-}
-
-.interactive-item {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background: var(--primary);
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.8rem;
-    cursor: pointer;
-    pointer-events: auto;
-    transition: all 0.3s, left 0.5s ease, top 0.5s ease; /* Added transitions for position */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    z-index: 20; /* Base z-index */
-    animation: float 3s ease-in-out infinite;
-    will-change: transform, z-index; /* Optimize for animations */
-}
-
-/* Add a new animation for when items are collected */
-@keyframes collect {
-    0% { 
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-    }
-    50% { 
-        transform: scale(1.5) rotate(180deg);
-        opacity: 0.7;
-    }
-    100% { 
-        transform: scale(0) rotate(360deg);
-        opacity: 0;
-    }
-}
-
-/* Add a class for when item is being collected */
-.interactive-item.collecting {
-    animation: collect 0.5s ease forwards !important;
-    pointer-events: none;
-}
-
-/* Add these mobile adjustments */
-@media (max-width: 767px) {
-    .interactive-item {
-        width: 40px;
-        height: 40px;
-        font-size: 1.5rem;
-    }
-    
-    /* Adjust positioning for mobile */
-    .items-container {
-        height: calc(100% - 120px);
-    }
-}
-
-@media (max-width: 480px) {
-    .interactive-item {
-        width: 35px;
-        height: 35px;
-        font-size: 1.3rem;
-    }
-}
-
-.items-container {
-    position: absolute;
-    width: 100%;
-    height: calc(100% - 150px);
-    pointer-events: none;
-    overflow: visible;
-}
-
-.interactive-item {
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background: var(--primary);
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.8rem;
-    cursor: pointer;
-    pointer-events: auto;
-    transition: all 0.3s, left 0.5s ease, top 0.5s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    z-index: 20;
-    animation: float 3s ease-in-out infinite;
-    will-change: transform, left, top;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Glow effect for adult items */
-.interactive-item.item-adult {
-    box-shadow: 0 0 15px rgba(232, 67, 147, 0.7);
-    border-color: rgba(232, 67, 147, 0.5);
-}
-
-/* Hover effect to make overlapping items more visible */
-.interactive-item:hover {
-    transform: scale(1.2) rotate(10deg) !important;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
-    z-index: 100 !important; /* Bring to front on hover */
-    border-color: rgba(241, 196, 15, 0.8);
-}
-
-/* Pulse animation for important items */
-@keyframes pulse-glow {
-    0%, 100% { 
-        box-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
-    }
-    50% { 
-        box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
-    }
-}
-
-.interactive-item.important {
-    animation: float 3s ease-in-out infinite, pulse-glow 2s ease-in-out infinite;
-}
-
-/* Mobile adjustments */
-@media (max-width: 767px) {
-    .interactive-item {
-        width: 40px;
-        height: 40px;
-        font-size: 1.5rem;
-    }
-    
-    /* Increase spacing for mobile */
-    .items-container {
-        height: calc(100% - 120px);
-    }
-}
-
-@media (max-width: 480px) {
-    .interactive-item {
-        width: 35px;
-        height: 35px;
-        font-size: 1.3rem;
-    }
-}
-
-        /* Inventory Panel */
+        /* ===== INVENTORY PANEL ===== */
         .inventory-panel {
             background: var(--surface);
             border-radius: 15px;
             padding: 15px;
             flex: 1;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
             position: relative;
+            min-height: 250px;
         }
 
         .panel-title {
@@ -531,6 +501,10 @@
             color: var(--warning);
             border-bottom: 2px solid var(--surface-light);
             padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .inventory-grid {
@@ -542,47 +516,55 @@
         .inventory-item {
             aspect-ratio: 1;
             background: var(--surface-light);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             font-size: 1.8rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             position: relative;
+            border: 2px solid transparent;
         }
 
-        .inventory-item:hover, .inventory-item.selected {
+        .inventory-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(241, 196, 15, 0.4);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--warning);
+            background: var(--surface);
         }
 
         .inventory-item.selected {
             border: 3px solid var(--warning);
             background: var(--surface);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(241, 196, 15, 0.4);
         }
 
         .item-name {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
             margin-top: 5px;
             text-align: center;
             color: var(--text-secondary);
+            line-height: 1.2;
+            padding: 0 3px;
         }
 
         .item-adult-badge {
             position: absolute;
-            top: 2px;
-            right: 2px;
+            top: 3px;
+            right: 3px;
             background: var(--adult);
             color: white;
             font-size: 0.6rem;
-            padding: 1px 4px;
+            padding: 2px 5px;
             border-radius: 4px;
             display: none;
+            font-weight: bold;
         }
 
-        /* Dialog Panel */
+        /* ===== DIALOG PANEL ===== */
         .dialog-panel {
             background: var(--surface);
             border-radius: 15px;
@@ -590,7 +572,8 @@
             flex: 2;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
+            min-height: 350px;
         }
 
         .dialog-content {
@@ -605,11 +588,12 @@
             gap: 10px;
             min-height: 200px;
             max-height: 300px;
+            scroll-behavior: smooth;
         }
 
         .message {
-            padding: 10px 15px;
-            border-radius: 15px;
+            padding: 12px 16px;
+            border-radius: 18px;
             max-width: 85%;
             animation: slideIn 0.3s ease;
             word-wrap: break-word;
@@ -618,17 +602,12 @@
             position: relative;
             clear: both;
             margin: 5px 0;
+            backdrop-filter: blur(5px);
         }
 
         @keyframes slideIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(10px) scale(0.95); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0) scale(1); 
-            }
+            from { opacity: 0; transform: translateY(10px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .message.npc-message {
@@ -638,7 +617,7 @@
             border-bottom-left-radius: 5px;
             margin-right: auto;
             box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-            border-left: 4px solid #fff;
+            border-left: 4px solid rgba(255, 255, 255, 0.8);
         }
 
         .message.player-message {
@@ -648,18 +627,18 @@
             border-bottom-right-radius: 5px;
             margin-left: auto;
             box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.2);
-            border-right: 4px solid #fff;
+            border-right: 4px solid rgba(255, 255, 255, 0.8);
         }
 
         .message.adult-message {
             background: linear-gradient(135deg, rgba(232, 67, 147, 0.9), rgba(214, 48, 49, 0.9));
-            border-color: #ff9ff3;
+            border-color: var(--adult-light);
         }
 
         .dialog-options {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
             max-height: 150px;
             overflow-y: auto;
             padding-right: 5px;
@@ -667,27 +646,29 @@
 
         .dialog-option {
             background: var(--surface-light);
-            padding: 10px;
+            padding: 12px;
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             font-size: 0.85rem;
-            border: 1px solid transparent;
+            border: 2px solid transparent;
         }
 
         .dialog-option:hover {
             background: var(--primary);
             transform: translateY(-2px);
             border-color: var(--warning);
+            box-shadow: var(--shadow);
         }
 
         .dialog-option.adult-option {
-            background: rgba(232, 67, 147, 0.3);
-            border: 1px dashed var(--adult);
+            background: rgba(232, 67, 147, 0.2);
+            border: 2px dashed var(--adult);
         }
 
         .dialog-option.adult-option:hover {
             background: var(--adult);
+            border-style: solid;
         }
 
         .dialog-option.disabled {
@@ -695,14 +676,16 @@
             cursor: not-allowed;
             background: var(--surface) !important;
             transform: none !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
         }
 
-        /* Comments Panel */
+        /* ===== COMMENTS PANEL ===== */
         .comments-panel {
             background: var(--surface);
             border-radius: 15px;
             padding: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow);
         }
 
         .comments-container {
@@ -713,11 +696,12 @@
 
         .comment {
             background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 10px;
             margin-bottom: 10px;
             animation: fadeInUp 0.5s ease;
-            border-left: 3px solid var(--warning);
+            border-left: 4px solid var(--warning);
+            backdrop-filter: blur(5px);
         }
 
         .comment.adult-comment {
@@ -733,9 +717,10 @@
         .comment-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-size: 0.8rem;
             color: var(--warning);
+            font-weight: bold;
         }
 
         .comment-text {
@@ -744,11 +729,11 @@
             line-height: 1.4;
         }
 
-        /* Action Buttons */
+        /* ===== ACTION BUTTONS ===== */
         .action-buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 12px;
         }
 
         @media (min-width: 480px) {
@@ -758,51 +743,58 @@
         }
 
         .btn {
-            padding: 15px;
+            padding: 14px;
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             background: var(--surface-light);
             color: var(--text);
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             font-size: 0.9rem;
+            border: 2px solid transparent;
+            touch-action: manipulation;
         }
 
         .btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--warning);
+        }
+
+        .btn:active {
+            transform: translateY(-1px);
         }
 
         .btn-primary {
-            background: linear-gradient(to right, var(--secondary), #2980b9);
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
         }
 
         .btn-success {
-            background: linear-gradient(to right, var(--success), #27ae60);
+            background: linear-gradient(135deg, var(--success), var(--success-dark));
         }
 
         .btn-danger {
-            background: linear-gradient(to right, var(--danger), #c0392b);
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
         }
 
         .btn-warning {
-            background: linear-gradient(to right, var(--warning), #f39c12);
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
         }
 
         .btn-adult {
-            background: linear-gradient(to right, var(--adult), #fd79a8);
+            background: linear-gradient(135deg, var(--adult), var(--adult-dark));
         }
 
         .btn-icon {
             font-size: 1.2rem;
         }
 
-        /* Footer */
+        /* ===== FOOTER ===== */
         .game-footer {
             display: flex;
             flex-direction: column;
@@ -816,35 +808,159 @@
             }
         }
 
-        /* Notification */
+        /* ===== NOTIFICATION ===== */
         .notification {
             position: fixed;
             top: 20px;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translateX(-50%) translateY(-20px);
             background: var(--success);
             color: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            z-index: 1000;
+            padding: 16px 30px;
+            border-radius: 12px;
+            z-index: 2000;
             opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: opacity 0.3s, transform 0.3s;
+            box-shadow: var(--shadow-hover);
             max-width: 90%;
             text-align: center;
+            font-weight: bold;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .notification.show {
             opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
 
         .notification.adult {
-            background: var(--adult);
+            background: linear-gradient(135deg, var(--adult), var(--adult-dark));
         }
 
-        /* Scrollbar */
+        .notification.warning {
+            background: linear-gradient(135deg, var(--warning), var(--warning-dark));
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger), var(--danger-dark));
+        }
+
+        /* ===== AI CONTROLS ===== */
+        .ai-controls {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            z-index: 30;
+        }
+
+        .ai-toggle {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .ai-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+            border-color: var(--warning);
+        }
+
+        /* ===== MINI-MAP ===== */
+        .mini-map {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 30;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .map-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--surface-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .map-dot:hover {
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .map-dot.active {
+            background: var(--warning);
+            box-shadow: 0 0 15px var(--warning);
+            transform: scale(1.2);
+        }
+
+        .map-dot.locked {
+            background: #7f8c8d;
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .map-dot.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ===== LOADING INDICATOR ===== */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--overlay);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            gap: 20px;
+            display: none;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--warning);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            color: var(--text);
+            font-size: 1.2rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
 
         ::-webkit-scrollbar-track {
@@ -855,84 +971,52 @@
         ::-webkit-scrollbar-thumb {
             background: var(--primary);
             border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: padding-box;
         }
 
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-dark);
+            background-clip: padding-box;
         }
 
-        /* AI Controls */
-        .ai-controls {
+        /* ===== ACCESSIBILITY ===== */
+        .sr-only {
             position: absolute;
-            bottom: 15px;
-            left: 15px;
-            z-index: 30;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
         }
 
-        .ai-toggle {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.3s;
-        }
-
-        .ai-toggle:hover {
-            background: var(--primary-dark);
-        }
-
-        /* Mini-map */
-        .mini-map {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 5px;
-            border-radius: 10px;
-            display: flex;
-            gap: 5px;
-            z-index: 30;
-        }
-
-        .map-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--surface-light);
-        }
-
-        .map-dot.active {
-            background: var(--warning);
-            box-shadow: 0 0 8px var(--warning);
-        }
-
-        /* Mobile Optimizations */
+        /* ===== MOBILE OPTIMIZATIONS ===== */
         @media (max-width: 767px) {
             .character, .npc {
-                width: 50px;
-                height: 80px;
+                width: 55px;
+                height: 85px;
             }
             
             .character-body, .npc-body {
-                height: 60px;
+                height: 70px;
             }
             
             .character-head, .npc-head {
-                width: 40px;
-                height: 40px;
-                top: -20px;
+                width: 45px;
+                height: 45px;
+                top: -22px;
+                left: 5px;
             }
             
             .interactive-item {
-                width: 40px;
-                height: 40px;
+                width: 45px;
+                height: 45px;
                 font-size: 1.5rem;
+                min-width: 44px;
+                min-height: 44px;
             }
             
             .dialog-options {
@@ -941,42 +1025,61 @@
             
             .btn {
                 padding: 12px;
-                font-size: 0.8rem;
+                font-size: 0.85rem;
             }
             
             .message {
                 max-width: 90%;
-                padding: 8px 12px;
+                padding: 10px 14px;
                 font-size: 0.9rem;
             }
-        }
-
-        @media (max-width: 480px) {
+            
+            .action-buttons {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
             .game-stats {
                 flex-direction: column;
-                align-items: center;
+                align-items: stretch;
             }
             
             .stat {
                 width: 100%;
-                justify-content: center;
+                justify-content: space-between;
             }
             
+            .mood-meter {
+                flex-direction: column;
+                gap: 5px;
+                align-items: flex-start;
+                padding: 8px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
             .action-buttons {
                 grid-template-columns: 1fr;
+            }
+            
+            .game-footer {
+                gap: 10px;
+            }
+            
+            .inventory-grid {
+                grid-template-columns: repeat(3, 1fr);
             }
         }
     </style>
 </head>
 <body>
     <!-- Age Gate -->
-    <div class="age-gate" id="age-gate">
-        <h1>⚠️ ADULT CONTENT WARNING</h1>
-        <p>This game contains mature themes, explicit dialogue, adult humor, and suggestive content intended for players 18 years and older.</p>
+    <div class="age-gate" id="age-gate" role="dialog" aria-labelledby="age-gate-title" aria-describedby="age-gate-description">
+        <h1 id="age-gate-title">⚠️ ADULT CONTENT WARNING</h1>
+        <p id="age-gate-description">This game contains mature themes, explicit dialogue, adult humor, and suggestive content intended for players 18 years and older.</p>
         
-        <div class="adult-warning">
+        <div class="adult-warning" role="alert">
             <p>⚠️ Content includes:</p>
-            <ul style="text-align: left; margin: 10px 0 0 20px;">
+            <ul>
                 <li>Sexual themes and innuendo</li>
                 <li>Explicit romantic encounters</li>
                 <li>Adult-oriented humor</li>
@@ -985,48 +1088,63 @@
         </div>
         
         <div class="age-gate-buttons">
-            <button class="age-btn age-confirm" id="age-confirm">I AM 18+ - ENTER GAME</button>
-            <button class="age-btn age-deny" id="age-deny">I AM UNDER 18 - EXIT</button>
+            <button class="age-btn age-confirm" id="age-confirm" aria-label="I am 18 or older, enter game">
+                <span>✅</span>
+                I AM 18+ - ENTER GAME
+            </button>
+            <button class="age-btn age-deny" id="age-deny" aria-label="I am under 18, exit">
+                <span>🚫</span>
+                I AM UNDER 18 - EXIT
+            </button>
         </div>
     </div>
 
+    <!-- Loading Indicator -->
+    <div class="loading" id="loading">
+        <div class="spinner" aria-hidden="true"></div>
+        <div class="loading-text" id="loading-text">Loading...</div>
+    </div>
+
     <!-- Main Game Container -->
-    <div class="main-container" id="game-container" style="display: none;">
+    <div class="main-container" id="game-container" style="display: none;" aria-hidden="true">
         <!-- Header -->
-        <header class="game-header">
+        <header class="game-header" role="banner">
             <h1 class="game-title">Leisure Suit Larry: AI Adventures</h1>
-            <div class="adult-indicator" id="adult-indicator">ADULT MODE</div>
-            <div class="game-stats">
+            <div class="adult-indicator" id="adult-indicator" aria-label="Adult Mode Enabled">ADULT MODE</div>
+            <div class="game-stats" role="status" aria-label="Game statistics">
                 <div class="stat">
-                    <span class="stat-icon">🏆</span>
+                    <span class="stat-icon" aria-hidden="true">🏆</span>
                     <span>Score: <span id="score-value">250</span></span>
                 </div>
                 <div class="stat">
-                    <span class="stat-icon">⏱️</span>
+                    <span class="stat-icon" aria-hidden="true">⏱️</span>
                     <span>Time: <span id="time-value">12:45</span></span>
                 </div>
                 <div class="stat">
-                    <span class="stat-icon">❤️</span>
+                    <span class="stat-icon" aria-hidden="true">❤️</span>
                     <span>Relationship: <span id="relationship-value">15</span></span>
                 </div>
                 <div class="stat">
-                    <span class="stat-icon">🎯</span>
+                    <span class="stat-icon" aria-hidden="true">🎯</span>
                     <span>Progress: <span id="progress-value">0%</span></span>
                 </div>
             </div>
             
             <!-- Quest Tracker -->
-            <div class="quest-tracker" id="quest-tracker">
-                <div class="quest-title">Current Quest: <span id="current-quest">Get Eve's attention</span></div>
-                <div class="quest-progress">
-                    <div class="quest-bar" id="quest-bar"></div>
+            <div class="quest-tracker" id="quest-tracker" role="status" aria-label="Quest progress">
+                <div class="quest-title">
+                    <span>📋</span>
+                    <span>Current Quest: <span id="current-quest">Get Eve's attention</span></span>
                 </div>
-                <div class="quest-description" id="quest-description" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 5px;"></div>
+                <div class="quest-progress">
+                    <div class="quest-bar" id="quest-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                </div>
+                <div class="quest-description" id="quest-description"></div>
             </div>
         </header>
 
         <!-- Game Content -->
-        <div class="game-content">
+        <main class="game-content" role="main">
             <!-- Scene -->
             <div class="scene-container">
                 <div class="scene" id="scene">
@@ -1034,20 +1152,20 @@
                     <div class="mood-meter">
                         <span>Mood:</span>
                         <div class="mood-fill">
-                            <div class="mood-level" id="mood-level" style="width: 50%;"></div>
+                            <div class="mood-level" id="mood-level" style="width: 50%;" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>
                         </div>
                     </div>
                     
                     <div class="character-container">
-                        <div class="character" id="player-character">
+                        <div class="character" id="player-character" role="button" tabindex="0" aria-label="Player character Larry">
                             <div class="character-body"></div>
                             <div class="character-head"></div>
-                            <div class="character-tooltip" style="position: absolute; bottom: -25px; width: 100%; text-align: center; font-size: 0.7rem; color: var(--secondary);">Larry</div>
+                            <div class="character-tooltip">Larry</div>
                         </div>
-                        <div class="npc" id="eve-character">
+                        <div class="npc" id="eve-character" role="button" tabindex="0" aria-label="NPC character Eve">
                             <div class="npc-body"></div>
                             <div class="npc-head"></div>
-                            <div class="npc-tooltip" style="position: absolute; bottom: -25px; width: 100%; text-align: center; font-size: 0.7rem; color: var(--danger);">Eve</div>
+                            <div class="npc-tooltip">Eve</div>
                         </div>
                     </div>
                     
@@ -1056,12 +1174,13 @@
                     </div>
                     
                     <div class="ai-controls">
-                        <button class="ai-toggle" id="ai-toggle">
-                            <span>🤖 AI: ON</span>
+                        <button class="ai-toggle" id="ai-toggle" aria-label="Toggle AI mode">
+                            <span>🤖</span>
+                            <span id="ai-status">AI: ON</span>
                         </button>
                     </div>
                     
-                    <div class="mini-map" id="mini-map">
+                    <div class="mini-map" id="mini-map" role="navigation" aria-label="Location map">
                         <!-- Mini-map dots will be added here -->
                     </div>
                 </div>
@@ -1070,105 +1189,117 @@
             <!-- Panels -->
             <div class="panels-container">
                 <!-- Inventory -->
-                <div class="inventory-panel">
-                    <h3 class="panel-title">🎒 Inventory (<span id="inventory-count">0</span>/12)</h3>
-                    <div class="inventory-grid" id="inventory-grid">
+                <section class="inventory-panel" aria-labelledby="inventory-title">
+                    <h3 class="panel-title" id="inventory-title">
+                        <span aria-hidden="true">🎒</span>
+                        <span>Inventory (<span id="inventory-count">0</span>/12)</span>
+                    </h3>
+                    <div class="inventory-grid" id="inventory-grid" role="grid">
                         <!-- Inventory items will be added here -->
                     </div>
-                </div>
+                </section>
 
                 <!-- Dialog -->
-                <div class="dialog-panel">
-                    <h3 class="panel-title">💬 Conversation with <span id="current-npc">Eve</span></h3>
-                    <div class="dialog-content" id="dialog-content">
+                <section class="dialog-panel" aria-labelledby="dialog-title">
+                    <h3 class="panel-title" id="dialog-title">
+                        <span aria-hidden="true">💬</span>
+                        <span>Conversation with <span id="current-npc">Eve</span></span>
+                    </h3>
+                    <div class="dialog-content" id="dialog-content" role="log" aria-live="polite">
                         <!-- Messages will be added here -->
                     </div>
-                    <div class="dialog-options" id="dialog-options">
+                    <div class="dialog-options" id="dialog-options" role="menu">
                         <!-- Dialog options will be added here -->
                     </div>
-                </div>
+                </section>
             </div>
 
             <!-- Comments -->
-            <div class="comments-panel">
-                <h3 class="panel-title">💭 NPC Thoughts</h3>
-                <div class="comments-container" id="comments-container">
+            <section class="comments-panel" aria-labelledby="comments-title">
+                <h3 class="panel-title" id="comments-title">
+                    <span aria-hidden="true">💭</span>
+                    <span>NPC Thoughts</span>
+                </h3>
+                <div class="comments-container" id="comments-container" role="list">
                     <!-- Comments will be added here -->
                 </div>
-            </div>
+            </section>
 
             <!-- Footer -->
-            <footer class="game-footer">
+            <footer class="game-footer" role="contentinfo">
                 <div class="action-buttons">
-                    <button class="btn btn-primary" id="look-btn">
-                        <span class="btn-icon">👁️</span>
+                    <button class="btn btn-primary" id="look-btn" aria-label="Look around">
+                        <span class="btn-icon" aria-hidden="true">👁️</span>
                         <span>Look</span>
                     </button>
-                    <button class="btn btn-primary" id="talk-btn">
-                        <span class="btn-icon">💬</span>
+                    <button class="btn btn-primary" id="talk-btn" aria-label="Talk to NPC">
+                        <span class="btn-icon" aria-hidden="true">💬</span>
                         <span>Talk</span>
                     </button>
-                    <button class="btn btn-warning" id="use-btn">
-                        <span class="btn-icon">🎯</span>
+                    <button class="btn btn-warning" id="use-btn" aria-label="Use selected item">
+                        <span class="btn-icon" aria-hidden="true">🎯</span>
                         <span>Use Item</span>
                     </button>
-                    <button class="btn btn-success" id="move-btn">
-                        <span class="btn-icon">🚶</span>
+                    <button class="btn btn-success" id="move-btn" aria-label="Move to next location">
+                        <span class="btn-icon" aria-hidden="true">🚶</span>
                         <span>Move</span>
                     </button>
-                    <button class="btn" id="examine-btn">
-                        <span class="btn-icon">🔍</span>
+                    <button class="btn" id="examine-btn" aria-label="Examine current location">
+                        <span class="btn-icon" aria-hidden="true">🔍</span>
                         <span>Examine</span>
                     </button>
-                    <button class="btn btn-adult" id="flirt-btn">
-                        <span class="btn-icon">💋</span>
+                    <button class="btn btn-adult" id="flirt-btn" aria-label="Flirt with NPC">
+                        <span class="btn-icon" aria-hidden="true">💋</span>
                         <span>Flirt</span>
                     </button>
-                    <button class="btn" id="quest-info-btn" style="background: linear-gradient(to right, var(--primary), var(--secondary));">
-                        <span class="btn-icon">📋</span>
+                    <button class="btn" id="quest-info-btn" aria-label="Show quest information">
+                        <span class="btn-icon" aria-hidden="true">📋</span>
                         <span>Quest Info</span>
                     </button>
                 </div>
                 
                 <div class="action-buttons">
-                    <button class="btn" id="save-btn">
-                        <span class="btn-icon">💾</span>
+                    <button class="btn" id="save-btn" aria-label="Save game">
+                        <span class="btn-icon" aria-hidden="true">💾</span>
                         <span>Save</span>
                     </button>
-                    <button class="btn" id="load-btn">
-                        <span class="btn-icon">📂</span>
+                    <button class="btn" id="load-btn" aria-label="Load saved game">
+                        <span class="btn-icon" aria-hidden="true">📂</span>
                         <span>Load</span>
                     </button>
-                    <button class="btn btn-danger" id="reset-btn">
-                        <span class="btn-icon">🔄</span>
+                    <button class="btn btn-danger" id="reset-btn" aria-label="Reset game">
+                        <span class="btn-icon" aria-hidden="true">🔄</span>
                         <span>Reset</span>
                     </button>
                 </div>
             </footer>
-        </div>
+        </main>
     </div>
 
     <!-- Notification -->
-    <div class="notification" id="notification"></div>
+    <div class="notification" id="notification" role="alert" aria-live="assertive"></div>
 
     <script>
-        // Enhanced Game State - FIXED VERSION
-        const gameState = {
-            ageVerified: false,
-            adultMode: false,
-            score: 250,
-            time: 765,
-            relationship: 15,
-            mood: 50,
-            intimacy: 0,
-            progress: 0, // FIXED: Starting at 0%
-            currentLocation: 'bar',
-            currentQuest: 0, // First quest is index 0
-            questsCompleted: 0,
-            inventory: ['money', 'phone', 'carKeys', 'sunglasses'],
-            selectedItem: null,
-            aiMode: true,
-            locations: [
+        // ===== GAME MODULES =====
+        const GameState = (() => {
+            let state = {
+                ageVerified: false,
+                adultMode: false,
+                score: 250,
+                time: 765,
+                relationship: 15,
+                mood: 50,
+                intimacy: 0,
+                progress: 0,
+                currentLocation: 'bar',
+                currentQuest: 0,
+                questsCompleted: 0,
+                inventory: ['money', 'phone', 'carKeys', 'sunglasses'],
+                selectedItem: null,
+                aiMode: true
+            };
+
+            const locations = [
                 { 
                     id: 'bar', 
                     name: 'Le Bar de l\'Amour', 
@@ -1205,9 +1336,9 @@
                     adultAvailable: true,
                     locked: true
                 }
-            ],
-            items: {
-                // Regular items
+            ];
+
+            const items = {
                 briefcase: { emoji: '💼', name: 'Mystery Briefcase', adult: false },
                 drink: { emoji: '🍸', name: 'Exotic Cocktail', adult: false },
                 key: { emoji: '🔑', name: 'Golden Key', adult: false },
@@ -1221,8 +1352,6 @@
                 towel: { emoji: '🏖️', name: 'Beach Towel', adult: false },
                 chips: { emoji: '🪙', name: 'Poker Chips', adult: false },
                 dice: { emoji: '🎲', name: 'Lucky Dice', adult: false },
-                
-                // Adult items (unlocked later)
                 condom: { emoji: '💋', name: 'Protection', adult: true },
                 wine: { emoji: '🍷', name: 'Romantic Wine', adult: true },
                 roomKey: { emoji: '🏨', name: 'Room Key', adult: true },
@@ -1237,8 +1366,9 @@
                 napkin: { emoji: '🧻', name: 'Napkin', adult: false },
                 cocktail: { emoji: '🍹', name: 'Beach Cocktail', adult: true },
                 ticket: { emoji: '🎫', name: 'Concert Ticket', adult: false }
-            },
-            npcs: {
+            };
+
+            const npcs = {
                 Eve: { mood: 50, relationship: 15, intimacy: 0, adultTolerance: 7 },
                 Bartender: { mood: 40, relationship: 5, adultTolerance: 8 },
                 Jessica: { mood: 60, relationship: 0, adultTolerance: 6 },
@@ -1251,8 +1381,9 @@
                 Dealer: { mood: 45, relationship: 0, adultTolerance: 7 },
                 Nicole: { mood: 60, relationship: 0, adultTolerance: 7 },
                 RichMan: { mood: 30, relationship: 0, adultTolerance: 8 }
-            },
-            quests: [
+            };
+
+            const quests = [
                 { 
                     id: 1, 
                     name: "Get Eve's attention", 
@@ -1309,485 +1440,328 @@
                     adult: true,
                     objective: "Use adult items and flirt to increase intimacy"
                 }
-            ],
-            npcComments: [],
-            messages: []
-        };
+            ];
 
-        // DOM Elements
-        const ageGate = document.getElementById('age-gate');
-        const gameContainer = document.getElementById('game-container');
-        const adultIndicator = document.getElementById('adult-indicator');
-        const scoreElement = document.getElementById('score-value');
-        const timeElement = document.getElementById('time-value');
-        const relationshipElement = document.getElementById('relationship-value');
-        const progressElement = document.getElementById('progress-value');
-        const moodElement = document.getElementById('mood-level');
-        const locationElement = document.getElementById('location-name');
-        const questTracker = document.getElementById('quest-tracker');
-        const currentQuestElement = document.getElementById('current-quest');
-        const questDescriptionElement = document.getElementById('quest-description');
-        const questBar = document.getElementById('quest-bar');
-        const itemsContainer = document.getElementById('items-container');
-        const inventoryGrid = document.getElementById('inventory-grid');
-        const inventoryCountElement = document.getElementById('inventory-count');
-        const dialogContent = document.getElementById('dialog-content');
-        const dialogOptions = document.getElementById('dialog-options');
-        const commentsContainer = document.getElementById('comments-container');
-        const notification = document.getElementById('notification');
-        const aiToggle = document.getElementById('ai-toggle');
-        const miniMap = document.getElementById('mini-map');
-        const playerCharacter = document.getElementById('player-character');
-        const eveCharacter = document.getElementById('eve-character');
-        const currentNpcElement = document.getElementById('current-npc');
+            const npcComments = [];
+            const messages = [];
 
-        // Enhanced Response Generator
-        class EnhancedAI {
-            constructor() {
-                this.responses = {
-                    neutral: [
-                        "Interesting approach. Let's see where this goes.",
-                        "You're not like the others. I'll give you that.",
-                        "That was... unexpected.",
-                        "You certainly know how to get my attention.",
-                        "I'm listening. Continue."
-                    ],
-                    positive: [
-                        "That's actually quite charming!",
-                        "You're making this difficult to resist.",
-                        "I'm starting to see your appeal.",
-                        "That was surprisingly sweet.",
-                        "Okay, you've got my full attention now."
-                    ],
-                    negative: [
-                        "Seriously? That's your best line?",
-                        "I've had better conversations with a wall.",
-                        "You're trying too hard.",
-                        "That's not going to work on me.",
-                        "Maybe you should try a different approach."
-                    ],
-                    adult: [
-                        "You're being quite forward... I like it.",
-                        "Now you're speaking my language.",
-                        "That's bold. Let's see if you can back it up.",
-                        "You have my attention... and my interest.",
-                        "Finally, someone who isn't afraid to be direct."
-                    ],
-                    explicit: [
-                        "You're not shy, are you? I appreciate that.",
-                        "Let's take this somewhere more... private.",
-                        "I like where this is heading.",
-                        "You've definitely piqued my interest.",
-                        "Why don't you show me what you've got?"
-                    ]
-                };
-            }
+            const getSelectedItem = () => state.selectedItem;
+            const setSelectedItem = (itemId) => { state.selectedItem = itemId; };
 
-            getResponse(mood, relationship, adultLevel = 0) {
-                let responseSet;
+            return {
+                getState: () => ({ ...state }),
+                setState: (newState) => { state = { ...state, ...newState }; },
                 
-                if (relationship > 70 && adultLevel > 0 && gameState.adultMode) {
-                    responseSet = adultLevel > 5 ? this.responses.explicit : this.responses.adult;
-                } else if (mood > 70) {
-                    responseSet = this.responses.positive;
-                } else if (mood > 40) {
-                    responseSet = this.responses.neutral;
-                } else {
-                    responseSet = this.responses.negative;
+                getSelectedItem,
+                setSelectedItem,
+                
+                getLocations: () => [...locations],
+                getLocation: (id) => locations.find(loc => loc.id === id),
+                
+                getItems: () => ({ ...items }),
+                getItem: (id) => items[id],
+                
+                getNPCs: () => ({ ...npcs }),
+                getNPC: (name) => npcs[name],
+                
+                getQuests: () => [...quests],
+                getQuest: (id) => quests.find(q => q.id === id),
+                getCurrentQuest: () => quests[state.currentQuest],
+                
+                getComments: () => [...npcComments],
+                addComment: (comment) => {
+                    npcComments.unshift(comment);
+                    if (npcComments.length > 6) npcComments.pop();
+                },
+                
+                getMessages: () => [...messages],
+                addMessage: (message) => {
+                    messages.push(message);
+                    if (messages.length > 15) messages.shift();
+                }
+            };
+        })();
+
+        // ===== UI MANAGER =====
+        const UIManager = (() => {
+            const elements = {};
+            let eventListeners = new Map();
+            
+            const initialize = () => {
+                // Cache all DOM elements
+                elements.ageGate = document.getElementById('age-gate');
+                elements.gameContainer = document.getElementById('game-container');
+                elements.loading = document.getElementById('loading');
+                elements.loadingText = document.getElementById('loading-text');
+                elements.adultIndicator = document.getElementById('adult-indicator');
+                elements.scoreValue = document.getElementById('score-value');
+                elements.timeValue = document.getElementById('time-value');
+                elements.relationshipValue = document.getElementById('relationship-value');
+                elements.progressValue = document.getElementById('progress-value');
+                elements.moodLevel = document.getElementById('mood-level');
+                elements.locationName = document.getElementById('location-name');
+                elements.questTracker = document.getElementById('quest-tracker');
+                elements.currentQuest = document.getElementById('current-quest');
+                elements.questDescription = document.getElementById('quest-description');
+                elements.questBar = document.getElementById('quest-bar');
+                elements.itemsContainer = document.getElementById('items-container');
+                elements.inventoryGrid = document.getElementById('inventory-grid');
+                elements.inventoryCount = document.getElementById('inventory-count');
+                elements.dialogContent = document.getElementById('dialog-content');
+                elements.dialogOptions = document.getElementById('dialog-options');
+                elements.commentsContainer = document.getElementById('comments-container');
+                elements.notification = document.getElementById('notification');
+                elements.aiToggle = document.getElementById('ai-toggle');
+                elements.aiStatus = document.getElementById('ai-status');
+                elements.miniMap = document.getElementById('mini-map');
+                elements.playerCharacter = document.getElementById('player-character');
+                elements.eveCharacter = document.getElementById('eve-character');
+                elements.currentNpc = document.getElementById('current-npc');
+                elements.useBtn = document.getElementById('use-btn');
+                
+                // Initialize ARIA attributes
+                elements.questBar.setAttribute('aria-valuenow', '0');
+                elements.moodLevel.setAttribute('aria-valuenow', '50');
+            };
+            
+            const showLoading = (message = 'Loading...') => {
+                elements.loadingText.textContent = message;
+                elements.loading.style.display = 'flex';
+            };
+            
+            const hideLoading = () => {
+                elements.loading.style.display = 'none';
+            };
+            
+            const showNotification = (text, type = '') => {
+                elements.notification.textContent = text;
+                elements.notification.className = `notification ${type} show`;
+                
+                if (type === 'adult' || text.includes('Quest Completed') || text.includes('unlocked')) {
+                    elements.notification.style.animation = 'pulse 0.5s 2';
                 }
                 
-                return responseSet[Math.floor(Math.random() * responseSet.length)];
-            }
-        }
-
-        const enhancedAI = new EnhancedAI();
-
-        // Initialize the game
-        function initGame() {
-            updateStats();
-            renderScene();
-            renderInventory();
-            renderMiniMap();
-            addMessage('Eve: Another night, another hopeful romantic. Make it interesting.', 'npc');
-            addComment('Eve', 'I wonder if this one will actually say something original for once.');
-            updateDialogOptions();
-            startGameTimer();
-            setupEventListeners();
+                setTimeout(() => {
+                    elements.notification.classList.remove('show');
+                    elements.notification.style.animation = '';
+                }, 2000);
+            };
             
-            // Show quest tracker
-            questTracker.style.display = 'block';
-            updateQuestTracker();
-        }
-
-        // Age Verification
-        document.getElementById('age-confirm').addEventListener('click', () => {
-            gameState.ageVerified = true;
-            gameState.adultMode = true;
-            ageGate.style.display = 'none';
-            gameContainer.style.display = 'block';
-            adultIndicator.style.display = 'block';
-            showNotification('Adult Mode Enabled! Welcome to the full experience!', 'adult');
-            initGame();
-            
-            // Add adult items to inventory
-            gameState.inventory.push('condom', 'ticket');
-            renderInventory();
-        });
-
-        document.getElementById('age-deny').addEventListener('click', () => {
-            gameState.ageVerified = true;
-            gameState.adultMode = false;
-            ageGate.style.display = 'none';
-            gameContainer.style.display = 'block';
-            showNotification('Standard Mode Enabled. Some content may be restricted.');
-            initGame();
-        });
-
-        // Update game stats display
-        function updateStats() {
-            scoreElement.textContent = gameState.score;
-            relationshipElement.textContent = gameState.relationship;
-            progressElement.textContent = `${gameState.progress}%`;
-            moodElement.style.width = `${gameState.mood}%`;
-            
-            // Update mood color
-            if (gameState.mood > 70) {
-                moodElement.style.background = 'linear-gradient(to right, #2ecc71, #27ae60)';
-            } else if (gameState.mood > 30) {
-                moodElement.style.background = 'linear-gradient(to right, #f1c40f, #e67e22)';
-            } else {
-                moodElement.style.background = 'linear-gradient(to right, #e74c3c, #c0392b)';
-            }
-        }
-
-        // Update quest tracker - FIXED VERSION
-        function updateQuestTracker() {
-            const currentQuest = gameState.quests[gameState.currentQuest];
-            
-            if (currentQuest) {
-                currentQuestElement.textContent = currentQuest.name;
-                questBar.style.width = `${currentQuest.progress}%`;
-                questDescriptionElement.textContent = currentQuest.description;
+            const updateStats = () => {
+                const state = GameState.getState();
+                elements.scoreValue.textContent = state.score;
+                elements.relationshipValue.textContent = state.relationship;
+                elements.progressValue.textContent = `${state.progress}%`;
+                elements.moodLevel.style.width = `${state.mood}%`;
+                elements.moodLevel.setAttribute('aria-valuenow', state.mood);
                 
-                // Update quest bar color based on progress
+                // Update mood color
+                if (state.mood > 70) {
+                    elements.moodLevel.style.background = 'linear-gradient(90deg, var(--success), var(--success-dark))';
+                } else if (state.mood > 30) {
+                    elements.moodLevel.style.background = 'linear-gradient(90deg, var(--warning), var(--warning-dark))';
+                } else {
+                    elements.moodLevel.style.background = 'linear-gradient(90deg, var(--danger), var(--danger-dark))';
+                }
+            };
+            
+            const updateQuestTracker = () => {
+                const currentQuest = GameState.getCurrentQuest();
+                if (!currentQuest) return;
+                
+                elements.currentQuest.textContent = currentQuest.name;
+                elements.questBar.style.width = `${currentQuest.progress}%`;
+                elements.questBar.setAttribute('aria-valuenow', currentQuest.progress);
+                elements.questDescription.textContent = currentQuest.description;
+                elements.questTracker.style.display = 'block';
+                
+                // Update quest bar color
                 if (currentQuest.progress < 30) {
-                    questBar.style.background = 'linear-gradient(to right, #e74c3c, #c0392b)';
+                    elements.questBar.style.background = 'linear-gradient(90deg, var(--danger), var(--danger-dark))';
                 } else if (currentQuest.progress < 70) {
-                    questBar.style.background = 'linear-gradient(to right, #f1c40f, #e67e22)';
+                    elements.questBar.style.background = 'linear-gradient(90deg, var(--warning), var(--warning-dark))';
                 } else {
-                    questBar.style.background = 'linear-gradient(to right, #2ecc71, #27ae60)';
+                    elements.questBar.style.background = 'linear-gradient(90deg, var(--success), var(--success-dark))';
                 }
-                
-                // Check if quest should be completed
-                if (currentQuest.progress >= 100 && !currentQuest.completed) {
-                    completeQuest(currentQuest.id);
-                }
-                
-                // Calculate overall game progress
-                updateOverallProgress();
-            }
-        }
-
-        // Update overall game progress
-        function updateOverallProgress() {
-            const completedQuests = gameState.quests.filter(q => q.completed).length;
-            const totalQuests = gameState.quests.length;
-            gameState.progress = Math.floor((completedQuests / totalQuests) * 100);
-            progressElement.textContent = `${gameState.progress}%`;
+            };
             
-            // Visual effect when progress increases
-            if (gameState.progress > 0 && gameState.progress % 20 === 0) {
-                progressElement.style.transform = 'scale(1.2)';
+            const addMessage = (text, sender, adult = false) => {
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${sender === 'npc' ? 'npc-message' : 'player-message'} ${adult ? 'adult-message' : ''}`;
+                messageElement.textContent = text;
+                messageElement.setAttribute('role', 'listitem');
+                
+                elements.dialogContent.appendChild(messageElement);
+                
+                // Auto-scroll
                 setTimeout(() => {
-                    progressElement.style.transform = 'scale(1)';
-                }, 300);
-            }
-        }
-
-        // Helper function to update quest progress - FIXED
-        function updateQuestProgress(questId, amount) {
-            const quest = gameState.quests.find(q => q.id === questId);
-            if (quest && !quest.completed) {
-                const oldProgress = quest.progress;
-                quest.progress = Math.min(100, Math.max(0, quest.progress + amount));
+                    elements.dialogContent.scrollTo({
+                        top: elements.dialogContent.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 100);
+            };
+            
+            const renderComments = () => {
+                elements.commentsContainer.innerHTML = '';
+                const comments = GameState.getComments();
                 
-                if (quest.progress !== oldProgress) {
-                    showNotification(`Quest Progress: ${quest.name} (${quest.progress}%)`);
-                    updateQuestTracker();
+                comments.forEach(comment => {
+                    const commentElement = document.createElement('div');
+                    commentElement.className = `comment ${comment.adult ? 'adult-comment' : ''}`;
+                    commentElement.setAttribute('role', 'listitem');
                     
-                    // Check if quest is now complete
-                    if (quest.progress >= 100 && !quest.completed) {
-                        completeQuest(questId);
-                    }
-                }
-            }
-        }
-
-        // Complete a quest - FIXED VERSION
-        function completeQuest(questId) {
-            const quest = gameState.quests.find(q => q.id === questId);
-            if (quest && !quest.completed) {
-                quest.completed = true;
-                gameState.score += quest.reward;
-                gameState.questsCompleted++;
-                
-                // Show quest completion animation
-                questBar.style.animation = 'pulse 0.5s 3';
-                setTimeout(() => {
-                    questBar.style.animation = '';
-                }, 1500);
-                
-                showNotification(`🎉 Quest Completed: ${quest.name}! +${quest.reward} points`, 'success');
-                
-                // Find next available quest
-                const nextQuestIndex = gameState.quests.findIndex(q => !q.completed);
-                if (nextQuestIndex !== -1) {
-                    gameState.currentQuest = nextQuestIndex;
-                    const nextQuest = gameState.quests[nextQuestIndex];
+                    commentElement.innerHTML = `
+                        <div class="comment-header">
+                            <span>${comment.npc}</span>
+                            <span>${comment.time}</span>
+                        </div>
+                        <div class="comment-text">${comment.text}</div>
+                    `;
                     
-                    // Add comment about new quest
-                    if (nextQuest.adult && !gameState.adultMode) {
-                        addComment('Eve', 'He might be ready for more, but he needs to enable adult mode...');
-                    } else {
-                        addComment('Eve', `Hmm, maybe he's ready for ${nextQuest.name.toLowerCase()}...`);
-                    }
-                }
-                
-                updateStats();
-                updateQuestTracker();
-                updateOverallProgress();
-            }
-        }
-
-// Render the current scene
-function renderScene() {
-    const location = gameState.locations.find(loc => loc.id === gameState.currentLocation);
-    locationElement.textContent = location.name;
-    currentNpcElement.textContent = location.npcs[0] || 'NPC';
-    
-    // Clear items
-    itemsContainer.innerHTML = '';
-    
-    // Filter items based on adult mode
-    const visibleItems = location.items.filter(itemId => {
-        const item = gameState.items[itemId];
-        return item && (gameState.adultMode || !item.adult);
-    });
-    
-    // Store occupied positions to prevent overlap
-    const occupiedPositions = [];
-    const itemWidth = 50; // Width in pixels (approximate)
-    const itemHeight = 50; // Height in pixels (approximate)
-    const margin = 15; // Minimum margin between items
-    
-    // Get container dimensions
-    const containerWidth = itemsContainer.offsetWidth;
-    const containerHeight = itemsContainer.offsetHeight;
-    
-    visibleItems.forEach((itemId, index) => {
-        const item = gameState.items[itemId];
-        if (item) {
-            const itemElement = document.createElement('div');
-            itemElement.className = `interactive-item ${item.adult ? 'item-adult' : ''}`;
-            itemElement.textContent = item.emoji;
-            itemElement.title = `${item.name}${item.adult ? ' (18+)' : ''}`;
-            
-            // Try to find a non-overlapping position
-            let x, y;
-            let attempts = 0;
-            const maxAttempts = 50;
-            
-            do {
-                // Distribute items in a non-uniform pattern to look natural
-                if (visibleItems.length <= 3) {
-                    // For few items, place them in a horizontal line
-                    x = 20 + (index * 25) + (Math.random() * 10 - 5);
-                    y = 30 + (Math.random() * 30);
-                } else if (visibleItems.length <= 6) {
-                    // For medium number of items, use a grid
-                    const cols = Math.ceil(Math.sqrt(visibleItems.length));
-                    const row = Math.floor(index / cols);
-                    const col = index % cols;
-                    x = 10 + (col * 30) + (Math.random() * 10 - 5);
-                    y = 20 + (row * 25) + (Math.random() * 10 - 5);
-                } else {
-                    // For many items, use a spiral pattern
-                    const angle = index * 0.618 * Math.PI * 2; // Golden angle
-                    const radius = Math.sqrt(index) * 8;
-                    x = 50 + Math.cos(angle) * radius + (Math.random() * 10 - 5);
-                    y = 40 + Math.sin(angle) * radius + (Math.random() * 10 - 5);
-                }
-                
-                // Ensure within bounds
-                x = Math.max(5, Math.min(95, x));
-                y = Math.max(10, Math.min(80, y));
-                
-                // Check for overlap
-                let hasOverlap = false;
-                for (const pos of occupiedPositions) {
-                    const distance = Math.sqrt(Math.pow(x - pos.x, 2) + Math.pow(y - pos.y, 2));
-                    // Convert percentage distance to approximate pixel distance
-                    const pixelDistance = distance * Math.min(containerWidth, containerHeight) / 100;
-                    
-                    if (pixelDistance < (itemWidth + margin)) {
-                        hasOverlap = true;
-                        break;
-                    }
-                }
-                
-                if (!hasOverlap) {
-                    break;
-                }
-                
-                attempts++;
-                
-                // If too many attempts, force a position but adjust to reduce overlap
-                if (attempts >= maxAttempts) {
-                    // Find the position with least overlap
-                    let bestX = x, bestY = y, minOverlap = Infinity;
-                    
-                    for (let i = 0; i < 10; i++) {
-                        const testX = Math.random() * 80 + 10;
-                        const testY = Math.random() * 60 + 20;
-                        let maxOverlap = 0;
-                        
-                        for (const pos of occupiedPositions) {
-                            const distance = Math.sqrt(Math.pow(testX - pos.x, 2) + Math.pow(testY - pos.y, 2));
-                            const pixelDistance = distance * Math.min(containerWidth, containerHeight) / 100;
-                            const overlap = Math.max(0, itemWidth + margin - pixelDistance);
-                            if (overlap > maxOverlap) {
-                                maxOverlap = overlap;
-                            }
-                        }
-                        
-                        if (maxOverlap < minOverlap) {
-                            minOverlap = maxOverlap;
-                            bestX = testX;
-                            bestY = testY;
-                        }
-                    }
-                    
-                    x = bestX;
-                    y = bestY;
-                    break;
-                }
-            } while (true);
-            
-            // Store this position as occupied
-            occupiedPositions.push({ x, y });
-            
-            // Set position
-            itemElement.style.left = `${x}%`;
-            itemElement.style.top = `${y}%`;
-            
-            // Add z-index based on vertical position to handle any remaining overlap
-            itemElement.style.zIndex = Math.floor(y);
-            
-            // Add a subtle rotation for variety
-            itemElement.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
-            
-            // Set animation delay for floating effect
-            itemElement.style.animationDelay = `${index * 0.1}s`;
-            
-            itemElement.addEventListener('click', () => collectItem(itemId));
-            
-            itemsContainer.appendChild(itemElement);
-        }
-    });
-    
-    // If we still have overlap issues, adjust positions after all items are placed
-    if (occupiedPositions.length > 1) {
-        setTimeout(() => {
-            const items = itemsContainer.querySelectorAll('.interactive-item');
-            const itemElements = Array.from(items);
-            
-            // Check and fix any remaining overlaps
-            itemElements.forEach((item, i) => {
-                const rect1 = item.getBoundingClientRect();
-                
-                for (let j = i + 1; j < itemElements.length; j++) {
-                    const otherItem = itemElements[j];
-                    const rect2 = otherItem.getBoundingClientRect();
-                    
-                    // Check for overlap
-                    if (rect1.left < rect2.right && rect1.right > rect2.left &&
-                        rect1.top < rect2.bottom && rect1.bottom > rect2.top) {
-                        
-                        // Move the second item slightly
-                        const currentLeft = parseFloat(otherItem.style.left);
-                        const currentTop = parseFloat(otherItem.style.top);
-                        
-                        // Move away from overlapping item
-                        const directionX = currentLeft - parseFloat(item.style.left);
-                        const directionY = currentTop - parseFloat(item.style.top);
-                        const length = Math.sqrt(directionX * directionX + directionY * directionY);
-                        
-                        if (length > 0) {
-                            const moveX = (directionX / length) * 5;
-                            const moveY = (directionY / length) * 5;
-                            
-                            otherItem.style.left = `${Math.max(5, Math.min(95, currentLeft + moveX))}%`;
-                            otherItem.style.top = `${Math.max(10, Math.min(80, currentTop + moveY))}%`;
-                        } else {
-                            // If items are exactly on top of each other, move randomly
-                            otherItem.style.left = `${Math.max(5, Math.min(95, currentLeft + (Math.random() * 10 - 5)))}%`;
-                            otherItem.style.top = `${Math.max(10, Math.min(80, currentTop + (Math.random() * 10 - 5)))}%`;
-                        }
-                    }
-                }
-            });
-        }, 100);
-    }
-}
-        // Render mini-map
-        function renderMiniMap() {
-            miniMap.innerHTML = '';
-            gameState.locations.forEach((location, index) => {
-                const dot = document.createElement('div');
-                dot.className = `map-dot ${location.id === gameState.currentLocation ? 'active' : ''} ${location.locked ? 'locked' : ''}`;
-                dot.title = `${location.name}${location.locked ? ' (Locked)' : ''}`;
-                
-                // Style locked locations
-                if (location.locked) {
-                    dot.style.background = '#7f8c8d';
-                    dot.style.opacity = '0.5';
-                }
-                
-                dot.addEventListener('click', () => {
-                    if (location.locked) {
-                        if (location.id === 'hotelRoom' && gameState.relationship < 70) {
-                            showNotification(`You need relationship level 70+ to access the Hotel Suite! (Current: ${gameState.relationship})`);
-                            return;
-                        }
-                    }
-                    gameState.currentLocation = location.id;
-                    renderScene();
-                    renderMiniMap();
-                    showNotification(`Traveled to: ${location.name}`);
-                    addMessage(`Larry: *Arrives at ${location.name}*`, 'player');
+                    elements.commentsContainer.appendChild(commentElement);
                 });
-                miniMap.appendChild(dot);
-            });
-        }
+            };
+            
+            const addEventListener = (elementId, event, handler) => {
+                const element = elements[elementId] || document.getElementById(elementId);
+                if (!element) return;
+                
+                element.addEventListener(event, handler);
+                const key = `${elementId}_${event}`;
+                eventListeners.set(key, { element, event, handler });
+            };
+            
+            const cleanupEventListeners = () => {
+                eventListeners.forEach(({ element, event, handler }) => {
+                    element.removeEventListener(event, handler);
+                });
+                eventListeners.clear();
+            };
+            
+            return {
+                elements,
+                initialize,
+                showLoading,
+                hideLoading,
+                showNotification,
+                updateStats,
+                updateQuestTracker,
+                addMessage,
+                renderComments,
+                addEventListener,
+                cleanupEventListeners
+            };
+        })();
 
-        // Render inventory
-        function renderInventory() {
-            inventoryGrid.innerHTML = '';
+        // ===== QUEST MANAGER =====
+        const QuestManager = (() => {
+            const updateQuestProgress = (questId, amount) => {
+                const quests = GameState.getQuests();
+                const quest = quests.find(q => q.id === questId);
+                
+                if (quest && !quest.completed) {
+                    const oldProgress = quest.progress;
+                    quest.progress = Math.min(100, Math.max(0, quest.progress + amount));
+                    
+                    if (quest.progress !== oldProgress) {
+                        UIManager.showNotification(`Quest Progress: ${quest.name} (${quest.progress}%)`);
+                        UIManager.updateQuestTracker();
+                        
+                        if (quest.progress >= 100) {
+                            completeQuest(questId);
+                        }
+                    }
+                }
+            };
             
-            // Filter items based on adult mode
-            const visibleItems = gameState.inventory.filter(itemId => {
-                const item = gameState.items[itemId];
-                return item && (gameState.adultMode || !item.adult);
-            });
+            const completeQuest = (questId) => {
+                const quests = GameState.getQuests();
+                const quest = quests.find(q => q.id === questId);
+                const state = GameState.getState();
+                
+                if (quest && !quest.completed) {
+                    quest.completed = true;
+                    GameState.setState({
+                        score: state.score + quest.reward,
+                        questsCompleted: state.questsCompleted + 1
+                    });
+                    
+                    // Show completion animation
+                    const questBar = UIManager.elements.questBar;
+                    questBar.style.animation = 'pulse 0.5s 3';
+                    setTimeout(() => {
+                        questBar.style.animation = '';
+                    }, 1500);
+                    
+                    UIManager.showNotification(`🎉 Quest Completed: ${quest.name}! +${quest.reward} points`, 'success');
+                    
+                    // Find next quest
+                    const nextQuestIndex = quests.findIndex(q => !q.completed);
+                    if (nextQuestIndex !== -1) {
+                        GameState.setState({ currentQuest: nextQuestIndex });
+                    }
+                    
+                    updateOverallProgress();
+                    UIManager.updateStats();
+                    UIManager.updateQuestTracker();
+                }
+            };
             
-            inventoryCountElement.textContent = visibleItems.length;
+            const updateOverallProgress = () => {
+                const state = GameState.getState();
+                const quests = GameState.getQuests();
+                const completedQuests = quests.filter(q => q.completed).length;
+                const totalQuests = quests.length;
+                
+                const progress = Math.floor((completedQuests / totalQuests) * 100);
+                GameState.setState({ progress });
+                
+                // Visual feedback
+                const progressElement = UIManager.elements.progressValue;
+                if (progress > 0 && progress % 20 === 0) {
+                    progressElement.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        progressElement.style.transform = 'scale(1)';
+                    }, 300);
+                }
+            };
             
-            visibleItems.forEach(itemId => {
-                const item = gameState.items[itemId];
-                if (item) {
+            return {
+                updateQuestProgress,
+                completeQuest,
+                updateOverallProgress
+            };
+        })();
+
+        // ===== INVENTORY MANAGER =====
+        const InventoryManager = (() => {
+            const renderInventory = () => {
+                const inventoryGrid = UIManager.elements.inventoryGrid;
+                inventoryGrid.innerHTML = '';
+                
+                const state = GameState.getState();
+                const items = GameState.getItems();
+                
+                // Filter items based on adult mode
+                const visibleItems = state.inventory.filter(itemId => {
+                    const item = items[itemId];
+                    return item && (state.adultMode || !item.adult);
+                });
+                
+                UIManager.elements.inventoryCount.textContent = visibleItems.length;
+                
+                // Add inventory items
+                visibleItems.forEach(itemId => {
+                    const item = items[itemId];
+                    if (!item) return;
+                    
                     const itemElement = document.createElement('div');
                     itemElement.className = 'inventory-item';
-                    if (gameState.selectedItem === itemId) {
+                    itemElement.setAttribute('role', 'gridcell');
+                    itemElement.tabIndex = 0;
+                    
+                    if (state.selectedItem === itemId) {
                         itemElement.classList.add('selected');
                     }
                     
@@ -1800,586 +1774,826 @@ function renderScene() {
                     itemElement.title = `${item.name}${item.adult ? ' (Adult Item)' : ''}`;
                     
                     itemElement.addEventListener('click', () => {
-                        gameState.selectedItem = gameState.selectedItem === itemId ? null : itemId;
+                        const newSelected = state.selectedItem === itemId ? null : itemId;
+                        GameState.setSelectedItem(newSelected);
                         renderInventory();
-                        showNotification(`${gameState.selectedItem === itemId ? 'Selected:' : 'Deselected:'} ${item.name}`);
+                        UIManager.showNotification(`${newSelected === itemId ? 'Selected:' : 'Deselected:'} ${item.name}`);
                     });
                     
                     inventoryGrid.appendChild(itemElement);
-                }
-            });
-            
-            // Add empty slots
-            const emptySlots = 12 - visibleItems.length;
-            for (let i = 0; i < emptySlots; i++) {
-                const emptySlot = document.createElement('div');
-                emptySlot.className = 'inventory-item';
-                emptySlot.style.opacity = '0.3';
-                emptySlot.innerHTML = '➕';
-                emptySlot.title = 'Empty slot';
-                inventoryGrid.appendChild(emptySlot);
-            }
-        }
-
-        // Add a message to the dialog
-        function addMessage(text, sender, adult = false) {
-            const messageElement = document.createElement('div');
-            
-            if (sender === 'npc') {
-                messageElement.className = `message npc-message ${adult ? 'adult-message' : ''}`;
-            } else {
-                messageElement.className = `message player-message ${adult ? 'adult-message' : ''}`;
-            }
-            
-            messageElement.textContent = text;
-            dialogContent.appendChild(messageElement);
-            
-            // Scroll to bottom with animation
-            setTimeout(() => {
-                dialogContent.scrollTo({
-                    top: dialogContent.scrollHeight,
-                    behavior: 'smooth'
                 });
-            }, 100);
-            
-            // Keep only last 15 messages
-            const messages = dialogContent.querySelectorAll('.message');
-            if (messages.length > 15) {
-                messages[0].remove();
-            }
-        }
-
-        // Add NPC comment
-        function addComment(npc, text, adult = false) {
-            const comment = {
-                npc,
-                text,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                adult
+                
+                // Add empty slots
+                const emptySlots = 12 - visibleItems.length;
+                for (let i = 0; i < emptySlots; i++) {
+                    const emptySlot = document.createElement('div');
+                    emptySlot.className = 'inventory-item';
+                    emptySlot.style.opacity = '0.3';
+                    emptySlot.innerHTML = '➕';
+                    emptySlot.title = 'Empty slot';
+                    emptySlot.setAttribute('role', 'gridcell');
+                    inventoryGrid.appendChild(emptySlot);
+                }
             };
             
-            gameState.npcComments.unshift(comment);
-            
-            // Keep only last 6 comments
-            if (gameState.npcComments.length > 6) {
-                gameState.npcComments.pop();
-            }
-            
-            renderComments();
-        }
-
-        // Render NPC comments
-        function renderComments() {
-            commentsContainer.innerHTML = '';
-            
-            gameState.npcComments.forEach(comment => {
-                const commentElement = document.createElement('div');
-                commentElement.className = `comment ${comment.adult ? 'adult-comment' : ''}`;
+            const collectItem = (itemId) => {
+                const state = GameState.getState();
+                const items = GameState.getItems();
+                const item = items[itemId];
                 
-                commentElement.innerHTML = `
-                    <div class="comment-header">
-                        <span>${comment.npc}</span>
-                        <span>${comment.time}</span>
-                    </div>
-                    <div class="comment-text">${comment.text}</div>
-                `;
+                if (!item) return;
                 
-                commentsContainer.appendChild(commentElement);
-            });
-            
-            // Scroll to top
-            commentsContainer.scrollTop = 0;
-        }
-
-        // Update dialog options
-        function updateDialogOptions() {
-            dialogOptions.innerHTML = '';
-            
-            const location = gameState.locations.find(loc => loc.id === gameState.currentLocation);
-            const currentNPC = location.npcs[0] || 'Eve';
-            
-            const options = [
-                { text: "Compliment her appearance", mood: 10, relationship: 5, adult: 0, questId: 1, progress: 30 },
-                { text: "Offer a drink", mood: 5, relationship: 3, adult: 0, questId: 2, progress: 50 },
-                { text: "Tell a joke", mood: -5, relationship: 2, adult: 0 },
-                { text: "Ask about her interests", mood: 15, relationship: 8, adult: 0, questId: 1, progress: 20 },
-            ];
-            
-            // Add adult options if available
-            if (gameState.adultMode && location.adultAvailable && gameState.relationship > 40) {
-                options.push(
-                    { text: "Make a suggestive comment", mood: -10, relationship: 10, adult: 3, questId: 6, progress: 15 },
-                    { text: "Invite her somewhere private", mood: -20, relationship: 15, adult: 5, questId: 6, progress: 25 }
-                );
-            }
-            
-            if (gameState.adultMode && gameState.relationship > 60) {
-                options.push(
-                    { text: "Whisper something naughty", mood: 5, relationship: 20, adult: 7, questId: 6, progress: 30 },
-                    { text: "Suggest getting a room", mood: 10, relationship: 25, adult: 8, questId: 5, progress: 50 }
-                );
-            }
-            
-            // Add quest-specific options
-            const currentQuest = gameState.quests[gameState.currentQuest];
-            if (currentQuest && !currentQuest.completed) {
-                if (currentQuest.id === 3 && gameState.inventory.includes('flowers')) {
-                    options.push({ text: "Give her the flowers", mood: 30, relationship: 20, adult: 0, questId: 3, progress: 100 });
-                }
-                if (currentQuest.id === 4 && gameState.inventory.includes('perfume')) {
-                    options.push({ text: "Give her the perfume", mood: 25, relationship: 15, adult: 0, questId: 4, progress: 100 });
-                }
-            }
-            
-            options.forEach((option, index) => {
-                const optionElement = document.createElement('div');
-                optionElement.className = `dialog-option ${option.adult > 0 ? 'adult-option' : ''}`;
-                optionElement.textContent = `${index + 1}. ${option.text}`;
-                
-                let disabled = false;
-                let disabledReason = '';
-                
-                if (option.adult > 0 && !gameState.adultMode) {
-                    disabled = true;
-                    disabledReason = "Adult content disabled";
-                } else if (option.adult > (gameState.npcs[currentNPC]?.adultTolerance || 5)) {
-                    disabled = true;
-                    disabledReason = "Too forward for this character";
-                } else if (option.text.includes("flowers") && !gameState.inventory.includes('flowers')) {
-                    disabled = true;
-                    disabledReason = "You need flowers first!";
-                } else if (option.text.includes("perfume") && !gameState.inventory.includes('perfume')) {
-                    disabled = true;
-                    disabledReason = "You need perfume first!";
+                // Check if already in inventory
+                if (state.inventory.includes(itemId)) {
+                    UIManager.showNotification(`Already have: ${item.name}`);
+                    return;
                 }
                 
-                if (disabled) {
-                    optionElement.classList.add('disabled');
-                    optionElement.title = disabledReason;
-                } else {
-                    optionElement.addEventListener('click', () => {
-                        selectDialogOption(option, currentNPC);
+                // Check adult mode
+                if (item.adult && !state.adultMode) {
+                    UIManager.showNotification('Adult content item - Enable Adult Mode to collect', 'warning');
+                    return;
+                }
+                
+                // Check inventory limit
+                if (state.inventory.length >= 12) {
+                    UIManager.showNotification('Inventory full! Cannot collect more items.', 'error');
+                    return;
+                }
+                
+                // Animation
+                const itemElement = event.target;
+                itemElement.classList.add('collecting');
+                
+                // Create flying animation
+                const itemClone = itemElement.cloneNode(true);
+                itemClone.style.position = 'fixed';
+                itemClone.style.zIndex = '1000';
+                itemClone.style.animation = 'none';
+                itemClone.style.transition = 'all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+                document.body.appendChild(itemClone);
+                
+                const inventoryPanel = document.querySelector('.inventory-panel');
+                const inventoryRect = inventoryPanel.getBoundingClientRect();
+                const itemRect = itemElement.getBoundingClientRect();
+                
+                setTimeout(() => {
+                    itemClone.style.left = `${inventoryRect.left + 20}px`;
+                    itemClone.style.top = `${inventoryRect.top + 20}px`;
+                    itemClone.style.transform = 'scale(0.5) rotate(720deg)';
+                    itemClone.style.opacity = '0';
+                }, 10);
+                
+                setTimeout(() => {
+                    itemClone.remove();
+                    
+                    // Add to inventory
+                    const newInventory = [...state.inventory, itemId];
+                    const newScore = state.score + 50 + (item.adult ? 50 : 0);
+                    
+                    GameState.setState({
+                        inventory: newInventory,
+                        score: newScore
                     });
-                    optionElement.title = option.questId ? "Advances quest progress" : "";
-                }
-                
-                dialogOptions.appendChild(optionElement);
-            });
-        }
-
-        // Handle dialog option selection - FIXED WITH QUEST PROGRESS
-        function selectDialogOption(option, npcName) {
-            addMessage(`Larry: ${option.text}`, 'player', option.adult > 0);
-            
-            // Update quest progress for relevant options
-            if (option.questId && option.progress) {
-                updateQuestProgress(option.questId, option.progress);
-            }
-            
-            // Generate AI response
-            setTimeout(() => {
-                const response = enhancedAI.getResponse(
-                    gameState.mood,
-                    gameState.relationship,
-                    option.adult
-                );
-                
-                addMessage(`${npcName}: ${response}`, 'npc', option.adult > 0);
-                
-                // Update game state
-                gameState.mood = Math.max(0, Math.min(100, gameState.mood + option.mood));
-                gameState.relationship += option.relationship;
-                gameState.score += 25 + (option.adult * 10);
-                
-                // Update NPC state
-                if (gameState.npcs[npcName]) {
-                    gameState.npcs[npcName].relationship += option.relationship;
-                    if (option.adult > 0) {
-                        gameState.npcs[npcName].intimacy += option.adult;
-                    }
-                }
-                
-                updateStats();
-                updateQuestTracker();
-                addComment(npcName, generateAIComment(option.adult), option.adult > 0);
-                
-                // Visual feedback
-                if (option.mood > 0) {
-                    eveCharacter.style.transform = 'translateY(-10px) scale(1.1)';
-                    setTimeout(() => {
-                        eveCharacter.style.transform = 'translateY(0) scale(1)';
-                    }, 500);
-                }
-                
-                // Update dialog options for next interaction
-                updateDialogOptions();
-                
-                // Check for special events
-                checkSpecialEvents(option, npcName);
-            }, 500);
-        }
-
-        // Generate AI comment
-        function generateAIComment(adultLevel = 0) {
-            const comments = [
-                'He actually said something interesting for once.',
-                'I might give him a chance if he keeps this up.',
-                'Same old lines, different guy.',
-                'There might be hope for him yet.',
-                'I wonder if he knows how transparent he is.'
-            ];
-            
-            if (adultLevel > 0 && gameState.adultMode) {
-                comments.push(
-                    'He\'s being quite forward... I like that.',
-                    'Finally someone who isn\'t afraid to go there.',
-                    'This could get interesting...',
-                    'He knows what he wants, I\'ll give him that.',
-                    'Maybe tonight won\'t be so boring after all.'
-                );
-            }
-            
-            if (gameState.mood > 70) {
-                comments.push('I\'m actually enjoying this conversation!');
-                comments.push('He\'s not like the others...');
-            } else if (gameState.mood < 30) {
-                comments.push('How much longer do I have to pretend to be interested?');
-                comments.push('This is getting painful to watch.');
-            }
-            
-            if (gameState.relationship > 50) {
-                comments.push('He\'s growing on me...');
-            }
-            
-            return comments[Math.floor(Math.random() * comments.length)];
-        }
-
-        // Check for special events
-        function checkSpecialEvents(option, npcName) {
-            // Unlock hotel room when relationship is high enough
-            if (gameState.relationship >= 70 && gameState.locations[4].locked) {
-                gameState.locations[4].locked = false;
-                showNotification('🏨 Hotel Suite unlocked! Relationship level reached!', 'adult');
-                addComment(npcName, 'Maybe we should continue this in my suite...', true);
-                renderMiniMap();
-            }
-            
-            // Check for quest item usage
-            if (option.text.includes("Give her the flowers") && gameState.inventory.includes('flowers')) {
-                // Remove flowers from inventory after giving
-                const flowerIndex = gameState.inventory.indexOf('flowers');
-                if (flowerIndex > -1) {
-                    gameState.inventory.splice(flowerIndex, 1);
-                    renderInventory();
-                }
-            }
-            
-            if (option.text.includes("Give her the perfume") && gameState.inventory.includes('perfume')) {
-                // Remove perfume from inventory after giving
-                const perfumeIndex = gameState.inventory.indexOf('perfume');
-                if (perfumeIndex > -1) {
-                    gameState.inventory.splice(perfumeIndex, 1);
-                    renderInventory();
-                }
-            }
-        }
-
-// Collect an item - FIXED WITH QUEST PROGRESS
-function collectItem(itemId) {
-    if (!gameState.inventory.includes(itemId)) {
-        const item = gameState.items[itemId];
-        
-        // Check if adult item in non-adult mode
-        if (item.adult && !gameState.adultMode) {
-            showNotification('Adult content item - Enable Adult Mode to collect');
-            return;
-        }
-        
-        // Check inventory limit
-        if (gameState.inventory.length >= 12) {
-            showNotification('Inventory full! Cannot collect more items.');
-            return;
-        }
-        
-        // Add collection animation
-        const itemElement = event.target;
-        itemElement.classList.add('collecting');
-        
-        // Create a flying animation to inventory
-        const itemClone = itemElement.cloneNode(true);
-        itemClone.style.position = 'fixed';
-        itemClone.style.zIndex = '1000';
-        itemClone.style.animation = 'none';
-        itemClone.style.transition = 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-        document.body.appendChild(itemClone);
-        
-        // Get inventory position
-        const inventoryPanel = document.querySelector('.inventory-panel');
-        const inventoryRect = inventoryPanel.getBoundingClientRect();
-        const itemRect = itemElement.getBoundingClientRect();
-        
-        // Animate to inventory
-        setTimeout(() => {
-            itemClone.style.left = `${inventoryRect.left + 20}px`;
-            itemClone.style.top = `${inventoryRect.top + 20}px`;
-            itemClone.style.transform = 'scale(0.5) rotate(720deg)';
-            itemClone.style.opacity = '0';
-        }, 10);
-        
-        // Wait for animation to complete before continuing
-        setTimeout(() => {
-            // Remove clone
-            itemClone.remove();
-            
-            // Add item to inventory
-            gameState.inventory.push(itemId);
-            gameState.score += 50 + (item.adult ? 50 : 0);
-            
-            showNotification(`Found: ${item.name}! +${50 + (item.adult ? 50 : 0)} points`, item.adult ? 'adult' : '');
-            
-            // Update quest progress based on collected items
-            if (itemId === 'flowers') {
-                updateQuestProgress(3, 50);
-            }
-            if (itemId === 'perfume') {
-                updateQuestProgress(4, 50);
-            }
-            if (itemId === 'roomKey') {
-                updateQuestProgress(5, 50);
-            }
-            if (itemId === 'wine' || itemId === 'champagne') {
-                updateQuestProgress(6, 10);
-            }
-            
-            renderInventory();
-            updateStats();
-            updateQuestTracker();
-            addComment('Eve', `He found a ${item.name}. ${item.adult ? 'How... interesting.' : 'Maybe he\'s luckier than he looks.'}`, item.adult);
-            
-            // Re-render scene to remove collected item
-            renderScene();
-        }, 500); // Match animation duration
-    } else {
-        showNotification(`Already have: ${gameState.items[itemId].name}`);
-    }
-}
-        // Show notification with enhanced visuals
-        function showNotification(text, type = '') {
-            notification.textContent = text;
-            notification.className = `notification ${type} show`;
-            
-            // Add pulse animation for important notifications
-            if (type === 'adult' || text.includes('Quest Completed') || text.includes('unlocked')) {
-                notification.style.animation = 'pulse 0.5s 2';
-            }
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-                notification.style.animation = '';
-            }, 2000);
-        }
-
-        // Start game timer
-        function startGameTimer() {
-            setInterval(() => {
-                gameState.time++;
-                const minutes = Math.floor(gameState.time / 60);
-                const seconds = gameState.time % 60;
-                timeElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                // Every minute, update mood slightly
-                if (gameState.time % 60 === 0) {
-                    gameState.mood = Math.max(0, gameState.mood - 1);
-                    updateStats();
-                }
-            }, 1000);
-        }
-
-        // Show quest information
-        function showQuestInfo() {
-            const currentQuest = gameState.quests[gameState.currentQuest];
-            const allQuests = gameState.quests;
-            
-            let info = `=== QUEST PROGRESS ===\n`;
-            info += `Overall: ${gameState.progress}%\n`;
-            info += `Quests Completed: ${gameState.questsCompleted}/${allQuests.length}\n\n`;
-            
-            info += `CURRENT QUEST:\n`;
-            info += `✓ ${currentQuest.name}\n`;
-            info += `Progress: ${currentQuest.progress}%\n`;
-            info += `Objective: ${currentQuest.objective || currentQuest.description}\n`;
-            info += `Reward: ${currentQuest.reward} points\n\n`;
-            
-            info += `NEXT QUESTS:\n`;
-            allQuests.forEach((quest, index) => {
-                if (index > gameState.currentQuest && index < gameState.currentQuest + 3) {
-                    const status = quest.completed ? '✓' : index === gameState.currentQuest ? '→' : '○';
-                    info += `${status} ${quest.name} ${quest.adult ? '(18+)' : ''}\n`;
-                }
-            });
-            
-            alert(info);
-        }
-
-        // Setup event listeners
-        function setupEventListeners() {
-            // Action buttons
-            document.getElementById('look-btn').addEventListener('click', () => {
-                addMessage('Larry: *Looks around the room*', 'player');
-                addComment('Eve', 'He\'s looking around like a lost puppy.');
-                updateQuestProgress(1, 5); // Small progress for looking around
-            });
-            
-            document.getElementById('talk-btn').addEventListener('click', () => {
-                updateDialogOptions();
-                showNotification('Dialog options updated!');
-            });
-            
-            document.getElementById('use-btn').addEventListener('click', () => {
-                if (gameState.selectedItem) {
-                    const item = gameState.items[gameState.selectedItem];
-                    addMessage(`Larry: *Uses ${item.name}*`, 'player', item.adult);
                     
-                    // Different effects based on item
-                    let moodChange = 0;
-                    let relationshipChange = 0;
-                    let questProgress = 0;
+                    UIManager.showNotification(`Found: ${item.name}! +${50 + (item.adult ? 50 : 0)} points`, item.adult ? 'adult' : '');
                     
-                    switch(gameState.selectedItem) {
-                        case 'flowers':
-                            moodChange = 20;
-                            relationshipChange = 10;
-                            questProgress = 50;
-                            updateQuestProgress(3, questProgress);
-                            break;
-                        case 'drink':
-                            moodChange = 15;
-                            relationshipChange = 5;
-                            questProgress = 50;
-                            updateQuestProgress(2, questProgress);
-                            break;
-                        case 'wine':
-                            moodChange = 25;
-                            relationshipChange = 15;
-                            questProgress = 25;
-                            updateQuestProgress(6, questProgress);
-                            break;
-                        case 'champagne':
-                            moodChange = 30;
-                            relationshipChange = 20;
-                            questProgress = 30;
-                            updateQuestProgress(6, questProgress);
-                            break;
-                        case 'condom':
-                            if (gameState.adultMode && gameState.relationship > 60) {
-                                moodChange = 40;
-                                relationshipChange = 30;
-                                questProgress = 50;
-                                updateQuestProgress(6, questProgress);
-                                addComment('Eve', 'He\'s confident, I\'ll give him that...', true);
-                            } else {
-                                moodChange = -20;
-                                relationshipChange = -10;
-                                showNotification('Too soon for that! Build relationship first.');
-                            }
-                            break;
-                        case 'perfume':
-                            moodChange = 25;
-                            relationshipChange = 15;
-                            questProgress = 50;
-                            updateQuestProgress(4, questProgress);
-                            break;
-                        case 'roomKey':
-                            moodChange = 35;
-                            relationshipChange = 25;
-                            questProgress = 50;
-                            updateQuestProgress(5, questProgress);
-                            break;
-                        default:
-                            moodChange = 5;
-                            relationshipChange = 3;
-                            break;
+                    // Quest progress
+                    if (itemId === 'flowers') QuestManager.updateQuestProgress(3, 50);
+                    if (itemId === 'perfume') QuestManager.updateQuestProgress(4, 50);
+                    if (itemId === 'roomKey') QuestManager.updateQuestProgress(5, 50);
+                    if (itemId === 'wine' || itemId === 'champagne') QuestManager.updateQuestProgress(6, 10);
+                    
+                    renderInventory();
+                    UIManager.updateStats();
+                    QuestManager.updateOverallProgress();
+                    
+                    // Re-render scene
+                    SceneManager.renderScene();
+                }, 600);
+            };
+            
+            return {
+                renderInventory,
+                collectItem
+            };
+        })();
+
+        // ===== SCENE MANAGER =====
+        const SceneManager = (() => {
+            const positionItems = (items) => {
+                const positions = [];
+                const gridSize = 4; // 4x4 grid
+                const padding = 8; // percentage
+                
+                return items.map((item, index) => {
+                    const row = Math.floor(index / gridSize);
+                    const col = index % gridSize;
+                    
+                    // Add some randomness within the grid cell
+                    const randomX = (Math.random() - 0.5) * 5;
+                    const randomY = (Math.random() - 0.5) * 5;
+                    
+                    return {
+                        x: padding + col * ((100 - 2 * padding) / gridSize) + randomX,
+                        y: padding + row * ((100 - 2 * padding) / gridSize) + randomY
+                    };
+                });
+            };
+            
+            const renderScene = () => {
+                const state = GameState.getState();
+                const location = GameState.getLocation(state.currentLocation);
+                const itemsContainer = UIManager.elements.itemsContainer;
+                
+                if (!location) return;
+                
+                UIManager.elements.locationName.textContent = location.name;
+                UIManager.elements.currentNpc.textContent = location.npcs[0] || 'NPC';
+                
+                // Clear items
+                itemsContainer.innerHTML = '';
+                
+                // Filter items based on adult mode
+                const visibleItems = location.items.filter(itemId => {
+                    const item = GameState.getItem(itemId);
+                    return item && (state.adultMode || !item.adult);
+                });
+                
+                // Position items
+                const positions = positionItems(visibleItems);
+                
+                // Create item elements
+                visibleItems.forEach((itemId, index) => {
+                    const item = GameState.getItem(itemId);
+                    if (!item) return;
+                    
+                    const position = positions[index];
+                    const itemElement = document.createElement('div');
+                    
+                    itemElement.className = `interactive-item ${item.adult ? 'item-adult' : ''}`;
+                    itemElement.textContent = item.emoji;
+                    itemElement.title = `${item.name}${item.adult ? ' (18+)' : ''}`;
+                    itemElement.setAttribute('role', 'button');
+                    itemElement.setAttribute('aria-label', `Collect ${item.name}`);
+                    itemElement.tabIndex = 0;
+                    
+                    // Set position
+                    itemElement.style.left = `${position.x}%`;
+                    itemElement.style.top = `${position.y}%`;
+                    itemElement.style.zIndex = Math.floor(position.y);
+                    itemElement.style.transform = `rotate(${Math.random() * 20 - 10}deg)`;
+                    itemElement.style.animationDelay = `${index * 0.1}s`;
+                    
+                    // Add click event
+                    itemElement.addEventListener('click', (e) => {
+                        InventoryManager.collectItem(itemId);
+                    });
+                    
+                    itemsContainer.appendChild(itemElement);
+                });
+            };
+            
+            const renderMiniMap = () => {
+                const miniMap = UIManager.elements.miniMap;
+                const locations = GameState.getLocations();
+                const state = GameState.getState();
+                
+                miniMap.innerHTML = '';
+                
+                locations.forEach((location, index) => {
+                    const dot = document.createElement('div');
+                    dot.className = `map-dot ${location.id === state.currentLocation ? 'active' : ''} ${location.locked ? 'locked' : ''}`;
+                    dot.title = `${location.name}${location.locked ? ' (Locked)' : ''}`;
+                    dot.setAttribute('role', 'button');
+                    dot.setAttribute('aria-label', `Travel to ${location.name}`);
+                    dot.tabIndex = 0;
+                    
+                    if (location.locked) {
+                        dot.style.background = '#7f8c8d';
+                        dot.style.opacity = '0.5';
+                        dot.style.cursor = 'not-allowed';
                     }
                     
-                    setTimeout(() => {
-                        const responses = [
-                            'Nice try, but not quite.',
-                            'Interesting choice...',
-                            'That was... unexpected.',
-                            'You\'re full of surprises.'
-                        ];
-                        
-                        if (moodChange > 20) {
-                            addMessage('Eve: Oh my! You really know how to impress a girl!', 'npc', item.adult);
-                        } else if (moodChange > 0) {
-                            addMessage(`Eve: ${responses[Math.floor(Math.random() * responses.length)]}`, 'npc', item.adult);
-                        } else {
-                            addMessage('Eve: That was... inappropriate.', 'npc');
-                        }
-                        
-                        gameState.mood = Math.max(0, Math.min(100, gameState.mood + moodChange));
-                        gameState.relationship += relationshipChange;
-                        gameState.score += 50;
-                        
-                        // Remove consumable items after use
-                        const consumables = ['drink', 'wine', 'champagne', 'flowers', 'perfume'];
-                        if (consumables.includes(gameState.selectedItem)) {
-                            const index = gameState.inventory.indexOf(gameState.selectedItem);
-                            if (index > -1) {
-                                gameState.inventory.splice(index, 1);
-                                renderInventory();
+                    dot.addEventListener('click', () => {
+                        if (location.locked) {
+                            if (location.id === 'hotelRoom' && state.relationship < 70) {
+                                UIManager.showNotification(`You need relationship level 70+ to access the Hotel Suite! (Current: ${state.relationship})`, 'error');
+                                return;
                             }
                         }
                         
-                        gameState.selectedItem = null;
-                        updateStats();
-                        renderInventory();
-                    }, 500);
+                        GameState.setState({ currentLocation: location.id });
+                        renderScene();
+                        renderMiniMap();
+                        UIManager.showNotification(`Traveled to: ${location.name}`);
+                        UIManager.addMessage(`Larry: *Arrives at ${location.name}*`, 'player');
+                    });
+                    
+                    miniMap.appendChild(dot);
+                });
+            };
+            
+            return {
+                renderScene,
+                renderMiniMap
+            };
+        })();
+
+        // ===== NPC AI SYSTEM =====
+        const NPCAI = (() => {
+            const responses = {
+                neutral: [
+                    "Interesting approach. Let's see where this goes.",
+                    "You're not like the others. I'll give you that.",
+                    "That was... unexpected.",
+                    "You certainly know how to get my attention.",
+                    "I'm listening. Continue."
+                ],
+                positive: [
+                    "That's actually quite charming!",
+                    "You're making this difficult to resist.",
+                    "I'm starting to see your appeal.",
+                    "That was surprisingly sweet.",
+                    "Okay, you've got my full attention now."
+                ],
+                negative: [
+                    "Seriously? That's your best line?",
+                    "I've had better conversations with a wall.",
+                    "You're trying too hard.",
+                    "That's not going to work on me.",
+                    "Maybe you should try a different approach."
+                ],
+                adult: [
+                    "You're being quite forward... I like it.",
+                    "Now you're speaking my language.",
+                    "That's bold. Let's see if you can back it up.",
+                    "You have my attention... and my interest.",
+                    "Finally, someone who isn't afraid to be direct."
+                ],
+                explicit: [
+                    "You're not shy, are you? I appreciate that.",
+                    "Let's take this somewhere more... private.",
+                    "I like where this is heading.",
+                    "You've definitely piqued my interest.",
+                    "Why don't you show me what you've got?"
+                ]
+            };
+            
+            const getResponse = (mood, relationship, adultLevel = 0) => {
+                const state = GameState.getState();
+                let responseSet;
+                
+                if (relationship > 70 && adultLevel > 0 && state.adultMode) {
+                    responseSet = adultLevel > 5 ? responses.explicit : responses.adult;
+                } else if (mood > 70) {
+                    responseSet = responses.positive;
+                } else if (mood > 40) {
+                    responseSet = responses.neutral;
                 } else {
-                    showNotification('Select an item from inventory first!');
-                }
-            });
-            
-            document.getElementById('move-btn').addEventListener('click', () => {
-                const locations = ['bar', 'hotel', 'beach', 'casino', 'hotelRoom'];
-                const currentIndex = locations.indexOf(gameState.currentLocation);
-                let nextIndex = (currentIndex + 1) % locations.length;
-                
-                // Skip locked locations
-                while (gameState.locations.find(loc => loc.id === locations[nextIndex])?.locked) {
-                    nextIndex = (nextIndex + 1) % locations.length;
-                    if (nextIndex === currentIndex) break; // Prevent infinite loop
+                    responseSet = responses.negative;
                 }
                 
-                gameState.currentLocation = locations[nextIndex];
-                const location = gameState.locations.find(loc => loc.id === gameState.currentLocation);
-                
-                showNotification(`Moved to: ${location.name}`);
-                renderScene();
-                renderMiniMap();
-                addComment('Eve', 'He moved to a different location. Persistent, I\'ll give him that.');
-                
-                // Reset dialog options for new location
-                updateDialogOptions();
-            });
+                return responseSet[Math.floor(Math.random() * responseSet.length)];
+            };
             
-            document.getElementById('examine-btn').addEventListener('click', () => {
-                const location = gameState.locations.find(loc => loc.id === gameState.currentLocation);
-                const examineTexts = {
-                    bar: "The bar is dimly lit with a sophisticated atmosphere. There's a jukebox in the corner playing soft jazz. Several interesting items are scattered around.",
-                    hotel: "The hotel lobby is luxurious with marble floors. The reception desk looks expensive. You notice some items on the tables.",
-                    beach: "The beach is beautiful with golden sand. The sunset creates a romantic atmosphere. Various beach items are visible.",
-                    casino: "The casino is bustling with activity. Slot machines ring and cards shuffle. There might be useful items around.",
-                    hotelRoom: "The suite is spacious with a king-size bed and a balcony overlooking the city. Romantic items are placed around the room."
-                };
+            const generateComment = (npcName, adultLevel = 0) => {
+                const state = GameState.getState();
+                const comments = [
+                    'He actually said something interesting for once.',
+                    'I might give him a chance if he keeps this up.',
+                    'Same old lines, different guy.',
+                    'There might be hope for him yet.',
+                    'I wonder if he knows how transparent he is.'
+                ];
                 
-                addMessage(`Larry: ${examineTexts[gameState.currentLocation] || "It's an interesting place."}`, 'player');
-                addComment('Eve', 'He\'s examining the surroundings. At least he\'s observant.');
-                updateQuestProgress(1, 5); // Small progress for examining
-            });
+                if (adultLevel > 0 && state.adultMode) {
+                    comments.push(
+                        'He\'s being quite forward... I like that.',
+                        'Finally someone who isn\'t afraid to go there.',
+                        'This could get interesting...',
+                        'He knows what he wants, I\'ll give him that.',
+                        'Maybe tonight won\'t be so boring after all.'
+                    );
+                }
+                
+                if (state.mood > 70) {
+                    comments.push('I\'m actually enjoying this conversation!');
+                    comments.push('He\'s not like the others...');
+                } else if (state.mood < 30) {
+                    comments.push('How much longer do I have to pretend to be interested?');
+                    comments.push('This is getting painful to watch.');
+                }
+                
+                if (state.relationship > 50) {
+                    comments.push('He\'s growing on me...');
+                }
+                
+                return comments[Math.floor(Math.random() * comments.length)];
+            };
             
-            document.getElementById('flirt-btn').addEventListener('click', () => {
-                if (gameState.adultMode) {
+            return {
+                getResponse,
+                generateComment
+            };
+        })();
+
+        // ===== DIALOG MANAGER =====
+        const DialogManager = (() => {
+            const updateDialogOptions = () => {
+                const dialogOptions = UIManager.elements.dialogOptions;
+                dialogOptions.innerHTML = '';
+                
+                const state = GameState.getState();
+                const location = GameState.getLocation(state.currentLocation);
+                const currentNPC = location?.npcs[0] || 'Eve';
+                const currentQuest = GameState.getCurrentQuest();
+                
+                const options = [
+                    { text: "Compliment her appearance", mood: 10, relationship: 5, adult: 0, questId: 1, progress: 30 },
+                    { text: "Offer a drink", mood: 5, relationship: 3, adult: 0, questId: 2, progress: 50 },
+                    { text: "Tell a joke", mood: -5, relationship: 2, adult: 0 },
+                    { text: "Ask about her interests", mood: 15, relationship: 8, adult: 0, questId: 1, progress: 20 },
+                ];
+                
+                // Adult options
+                if (state.adultMode && location?.adultAvailable && state.relationship > 40) {
+                    options.push(
+                        { text: "Make a suggestive comment", mood: -10, relationship: 10, adult: 3, questId: 6, progress: 15 },
+                        { text: "Invite her somewhere private", mood: -20, relationship: 15, adult: 5, questId: 6, progress: 25 }
+                    );
+                }
+                
+                if (state.adultMode && state.relationship > 60) {
+                    options.push(
+                        { text: "Whisper something naughty", mood: 5, relationship: 20, adult: 7, questId: 6, progress: 30 },
+                        { text: "Suggest getting a room", mood: 10, relationship: 25, adult: 8, questId: 5, progress: 50 }
+                    );
+                }
+                
+                // Quest-specific options
+                if (currentQuest && !currentQuest.completed) {
+                    if (currentQuest.id === 3 && state.inventory.includes('flowers')) {
+                        options.push({ text: "Give her the flowers", mood: 30, relationship: 20, adult: 0, questId: 3, progress: 100 });
+                    }
+                    if (currentQuest.id === 4 && state.inventory.includes('perfume')) {
+                        options.push({ text: "Give her the perfume", mood: 25, relationship: 15, adult: 0, questId: 4, progress: 100 });
+                    }
+                }
+                
+                // Create option elements
+                options.forEach((option, index) => {
+                    const optionElement = document.createElement('div');
+                    optionElement.className = `dialog-option ${option.adult > 0 ? 'adult-option' : ''}`;
+                    optionElement.textContent = `${index + 1}. ${option.text}`;
+                    optionElement.setAttribute('role', 'menuitem');
+                    optionElement.tabIndex = 0;
+                    
+                    let disabled = false;
+                    let disabledReason = '';
+                    
+                    if (option.adult > 0 && !state.adultMode) {
+                        disabled = true;
+                        disabledReason = "Adult content disabled";
+                    } else if (option.adult > (GameState.getNPC(currentNPC)?.adultTolerance || 5)) {
+                        disabled = true;
+                        disabledReason = "Too forward for this character";
+                    } else if (option.text.includes("flowers") && !state.inventory.includes('flowers')) {
+                        disabled = true;
+                        disabledReason = "You need flowers first!";
+                    } else if (option.text.includes("perfume") && !state.inventory.includes('perfume')) {
+                        disabled = true;
+                        disabledReason = "You need perfume first!";
+                    }
+                    
+                    if (disabled) {
+                        optionElement.classList.add('disabled');
+                        optionElement.title = disabledReason;
+                    } else {
+                        optionElement.addEventListener('click', () => {
+                            selectDialogOption(option, currentNPC);
+                        });
+                        optionElement.title = option.questId ? "Advances quest progress" : "";
+                    }
+                    
+                    dialogOptions.appendChild(optionElement);
+                });
+            };
+            
+            const selectDialogOption = (option, npcName) => {
+                UIManager.addMessage(`Larry: ${option.text}`, 'player', option.adult > 0);
+                
+                // Update quest progress
+                if (option.questId && option.progress) {
+                    QuestManager.updateQuestProgress(option.questId, option.progress);
+                }
+                
+                // Generate AI response
+                setTimeout(() => {
+                    const response = NPCAI.getResponse(
+                        GameState.getState().mood,
+                        GameState.getState().relationship,
+                        option.adult
+                    );
+                    
+                    UIManager.addMessage(`${npcName}: ${response}`, 'npc', option.adult > 0);
+                    
+                    // Update game state
+                    const state = GameState.getState();
+                    const newMood = Math.max(0, Math.min(100, state.mood + option.mood));
+                    const newRelationship = state.relationship + option.relationship;
+                    const newScore = state.score + 25 + (option.adult * 10);
+                    
+                    GameState.setState({
+                        mood: newMood,
+                        relationship: newRelationship,
+                        score: newScore
+                    });
+                    
+                    // Update NPC state
+                    const npc = GameState.getNPC(npcName);
+                    if (npc) {
+                        npc.relationship += option.relationship;
+                        if (option.adult > 0) {
+                            npc.intimacy += option.adult;
+                        }
+                    }
+                    
+                    UIManager.updateStats();
+                    QuestManager.updateOverallProgress();
+                    
+                    // Add NPC comment
+                    const comment = NPCAI.generateComment(npcName, option.adult);
+                    GameState.addComment({
+                        npc: npcName,
+                        text: comment,
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: option.adult > 0
+                    });
+                    UIManager.renderComments();
+                    
+                    // Visual feedback
+                    if (option.mood > 0) {
+                        const eveCharacter = UIManager.elements.eveCharacter;
+                        eveCharacter.style.transform = 'translateY(-10px) scale(1.1)';
+                        setTimeout(() => {
+                            eveCharacter.style.transform = 'translateY(0) scale(1)';
+                        }, 500);
+                    }
+                    
+                    // Check for special events
+                    checkSpecialEvents(option, npcName);
+                    
+                    // Update dialog options
+                    updateDialogOptions();
+                }, 500);
+            };
+            
+            const checkSpecialEvents = (option, npcName) => {
+                const state = GameState.getState();
+                const locations = GameState.getLocations();
+                
+                // Unlock hotel room
+                if (state.relationship >= 70 && locations[4].locked) {
+                    locations[4].locked = false;
+                    UIManager.showNotification('🏨 Hotel Suite unlocked! Relationship level reached!', 'adult');
+                    GameState.addComment({
+                        npc: npcName,
+                        text: 'Maybe we should continue this in my suite...',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: true
+                    });
+                    UIManager.renderComments();
+                    SceneManager.renderMiniMap();
+                }
+                
+                // Remove consumable items
+                if (option.text.includes("Give her the flowers") && state.inventory.includes('flowers')) {
+                    const newInventory = state.inventory.filter(item => item !== 'flowers');
+                    GameState.setState({ inventory: newInventory });
+                    InventoryManager.renderInventory();
+                }
+                
+                if (option.text.includes("Give her the perfume") && state.inventory.includes('perfume')) {
+                    const newInventory = state.inventory.filter(item => item !== 'perfume');
+                    GameState.setState({ inventory: newInventory });
+                    InventoryManager.renderInventory();
+                }
+            };
+            
+            return {
+                updateDialogOptions,
+                selectDialogOption
+            };
+        })();
+
+        // ===== ITEM USE HANDLER =====
+        const ItemUseHandler = (() => {
+            const useSelectedItem = () => {
+                const selectedItemId = GameState.getSelectedItem();
+                const state = GameState.getState();
+                
+                if (!selectedItemId) {
+                    UIManager.showNotification('Select an item from inventory first!', 'warning');
+                    return;
+                }
+                
+                const item = GameState.getItem(selectedItemId);
+                if (!item) return;
+                
+                UIManager.addMessage(`Larry: *Uses ${item.name}*`, 'player', item.adult);
+                
+                let moodChange = 0;
+                let relationshipChange = 0;
+                let questProgress = 0;
+                
+                switch(selectedItemId) {
+                    case 'flowers':
+                        moodChange = 20;
+                        relationshipChange = 10;
+                        questProgress = 50;
+                        QuestManager.updateQuestProgress(3, questProgress);
+                        break;
+                    case 'drink':
+                        moodChange = 15;
+                        relationshipChange = 5;
+                        questProgress = 50;
+                        QuestManager.updateQuestProgress(2, questProgress);
+                        break;
+                    case 'wine':
+                        moodChange = 25;
+                        relationshipChange = 15;
+                        questProgress = 25;
+                        QuestManager.updateQuestProgress(6, questProgress);
+                        break;
+                    case 'champagne':
+                        moodChange = 30;
+                        relationshipChange = 20;
+                        questProgress = 30;
+                        QuestManager.updateQuestProgress(6, questProgress);
+                        break;
+                    case 'condom':
+                        if (state.adultMode && state.relationship > 60) {
+                            moodChange = 40;
+                            relationshipChange = 30;
+                            questProgress = 50;
+                            QuestManager.updateQuestProgress(6, questProgress);
+                            GameState.addComment({
+                                npc: 'Eve',
+                                text: 'He\'s confident, I\'ll give him that...',
+                                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                                adult: true
+                            });
+                        } else {
+                            moodChange = -20;
+                            relationshipChange = -10;
+                            UIManager.showNotification('Too soon for that! Build relationship first.', 'warning');
+                        }
+                        break;
+                    case 'perfume':
+                        moodChange = 25;
+                        relationshipChange = 15;
+                        questProgress = 50;
+                        QuestManager.updateQuestProgress(4, questProgress);
+                        break;
+                    case 'roomKey':
+                        moodChange = 35;
+                        relationshipChange = 25;
+                        questProgress = 50;
+                        QuestManager.updateQuestProgress(5, questProgress);
+                        break;
+                    default:
+                        moodChange = 5;
+                        relationshipChange = 3;
+                }
+                
+                setTimeout(() => {
+                    const responses = [
+                        'Nice try, but not quite.',
+                        'Interesting choice...',
+                        'That was... unexpected.',
+                        'You\'re full of surprises.'
+                    ];
+                    
+                    if (moodChange > 20) {
+                        UIManager.addMessage('Eve: Oh my! You really know how to impress a girl!', 'npc', item.adult);
+                    } else if (moodChange > 0) {
+                        UIManager.addMessage(`Eve: ${responses[Math.floor(Math.random() * responses.length)]}`, 'npc', item.adult);
+                    } else {
+                        UIManager.addMessage('Eve: That was... inappropriate.', 'npc');
+                    }
+                    
+                    const newMood = Math.max(0, Math.min(100, state.mood + moodChange));
+                    const newRelationship = state.relationship + relationshipChange;
+                    const newScore = state.score + 50;
+                    
+                    GameState.setState({
+                        mood: newMood,
+                        relationship: newRelationship,
+                        score: newScore,
+                        selectedItem: null
+                    });
+                    
+                    // Remove consumable items
+                    const consumables = ['drink', 'wine', 'champagne', 'flowers', 'perfume'];
+                    if (consumables.includes(selectedItemId)) {
+                        const newInventory = state.inventory.filter(itemId => itemId !== selectedItemId);
+                        GameState.setState({ inventory: newInventory });
+                        InventoryManager.renderInventory();
+                    }
+                    
+                    UIManager.updateStats();
+                    InventoryManager.renderInventory();
+                }, 500);
+            };
+            
+            return {
+                useSelectedItem
+            };
+        })();
+
+        // ===== GAME ENGINE =====
+        const GameEngine = (() => {
+            let gameTimer;
+            
+            const init = () => {
+                UIManager.initialize();
+                
+                // Age verification
+                document.getElementById('age-confirm').addEventListener('click', () => {
+                    GameState.setState({
+                        ageVerified: true,
+                        adultMode: true
+                    });
+                    
+                    UIManager.showLoading('Initializing game...');
+                    
+                    setTimeout(() => {
+                        UIManager.elements.ageGate.style.display = 'none';
+                        UIManager.elements.gameContainer.style.display = 'block';
+                        UIManager.elements.gameContainer.setAttribute('aria-hidden', 'false');
+                        UIManager.elements.adultIndicator.style.display = 'block';
+                        
+                        // Add adult items
+                        const state = GameState.getState();
+                        const newInventory = [...state.inventory, 'condom', 'ticket'];
+                        GameState.setState({ inventory: newInventory });
+                        
+                        UIManager.hideLoading();
+                        UIManager.showNotification('Adult Mode Enabled! Welcome to the full experience!', 'adult');
+                        startGame();
+                    }, 1000);
+                });
+                
+                document.getElementById('age-deny').addEventListener('click', () => {
+                    GameState.setState({
+                        ageVerified: true,
+                        adultMode: false
+                    });
+                    
+                    UIManager.showLoading('Initializing game...');
+                    
+                    setTimeout(() => {
+                        UIManager.elements.ageGate.style.display = 'none';
+                        UIManager.elements.gameContainer.style.display = 'block';
+                        UIManager.elements.gameContainer.setAttribute('aria-hidden', 'false');
+                        
+                        UIManager.hideLoading();
+                        UIManager.showNotification('Standard Mode Enabled. Some content may be restricted.');
+                        startGame();
+                    }, 1000);
+                });
+            };
+            
+            const startGame = () => {
+                try {
+                    UIManager.updateStats();
+                    SceneManager.renderScene();
+                    SceneManager.renderMiniMap();
+                    InventoryManager.renderInventory();
+                    UIManager.addMessage('Eve: Another night, another hopeful romantic. Make it interesting.', 'npc');
+                    
+                    GameState.addComment({
+                        npc: 'Eve',
+                        text: 'I wonder if this one will actually say something original for once.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: false
+                    });
+                    UIManager.renderComments();
+                    
+                    DialogManager.updateDialogOptions();
+                    startGameTimer();
+                    setupEventListeners();
+                    
+                    UIManager.elements.questTracker.style.display = 'block';
+                    QuestManager.updateOverallProgress();
+                    UIManager.updateQuestTracker();
+                } catch (error) {
+                    console.error('Game initialization error:', error);
+                    UIManager.showNotification('Game initialization failed! Please refresh.', 'error');
+                }
+            };
+            
+            const startGameTimer = () => {
+                clearInterval(gameTimer);
+                gameTimer = setInterval(() => {
+                    const state = GameState.getState();
+                    GameState.setState({ time: state.time + 1 });
+                    
+                    const minutes = Math.floor(state.time / 60);
+                    const seconds = state.time % 60;
+                    UIManager.elements.timeValue.textContent = 
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    // Update mood every minute
+                    if (state.time % 60 === 0) {
+                        const newMood = Math.max(0, state.mood - 1);
+                        GameState.setState({ mood: newMood });
+                        UIManager.updateStats();
+                    }
+                }, 1000);
+            };
+            
+            const setupEventListeners = () => {
+                // Action buttons
+                UIManager.addEventListener('look-btn', 'click', () => {
+                    UIManager.addMessage('Larry: *Looks around the room*', 'player');
+                    GameState.addComment({
+                        npc: 'Eve',
+                        text: 'He\'s looking around like a lost puppy.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: false
+                    });
+                    UIManager.renderComments();
+                    QuestManager.updateQuestProgress(1, 5);
+                });
+                
+                UIManager.addEventListener('talk-btn', 'click', () => {
+                    DialogManager.updateDialogOptions();
+                    UIManager.showNotification('Dialog options updated!');
+                });
+                
+                // FIXED: Use button now properly checks current selected item
+                UIManager.elements.useBtn.addEventListener('click', () => {
+                    ItemUseHandler.useSelectedItem();
+                });
+                
+                UIManager.addEventListener('move-btn', 'click', () => {
+                    const state = GameState.getState();
+                    const locations = GameState.getLocations();
+                    const currentIndex = locations.findIndex(loc => loc.id === state.currentLocation);
+                    let nextIndex = (currentIndex + 1) % locations.length;
+                    
+                    // Skip locked locations
+                    while (locations[nextIndex]?.locked) {
+                        nextIndex = (nextIndex + 1) % locations.length;
+                        if (nextIndex === currentIndex) break;
+                    }
+                    
+                    GameState.setState({ currentLocation: locations[nextIndex].id });
+                    UIManager.showNotification(`Moved to: ${locations[nextIndex].name}`);
+                    SceneManager.renderScene();
+                    SceneManager.renderMiniMap();
+                    
+                    GameState.addComment({
+                        npc: 'Eve',
+                        text: 'He moved to a different location. Persistent, I\'ll give him that.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: false
+                    });
+                    UIManager.renderComments();
+                    
+                    DialogManager.updateDialogOptions();
+                });
+                
+                UIManager.addEventListener('examine-btn', 'click', () => {
+                    const state = GameState.getState();
+                    const examineTexts = {
+                        bar: "The bar is dimly lit with a sophisticated atmosphere. There's a jukebox in the corner playing soft jazz. Several interesting items are scattered around.",
+                        hotel: "The hotel lobby is luxurious with marble floors. The reception desk looks expensive. You notice some items on the tables.",
+                        beach: "The beach is beautiful with golden sand. The sunset creates a romantic atmosphere. Various beach items are visible.",
+                        casino: "The casino is bustling with activity. Slot machines ring and cards shuffle. There might be useful items around.",
+                        hotelRoom: "The suite is spacious with a king-size bed and a balcony overlooking the city. Romantic items are placed around the room."
+                    };
+                    
+                    UIManager.addMessage(`Larry: ${examineTexts[state.currentLocation] || "It's an interesting place."}`, 'player');
+                    GameState.addComment({
+                        npc: 'Eve',
+                        text: 'He\'s examining the surroundings. At least he\'s observant.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: false
+                    });
+                    UIManager.renderComments();
+                    QuestManager.updateQuestProgress(1, 5);
+                });
+                
+                UIManager.addEventListener('flirt-btn', 'click', () => {
+                    const state = GameState.getState();
+                    if (!state.adultMode) {
+                        UIManager.showNotification('Flirt mode requires Adult Mode to be enabled!', 'warning');
+                        return;
+                    }
+                    
                     const flirtLines = [
                         "Your eyes are like deep pools I could swim in... all night.",
                         "Is it hot in here, or is it just you?",
@@ -2389,96 +2603,168 @@ function collectItem(itemId) {
                     ];
                     
                     const flirtLine = flirtLines[Math.floor(Math.random() * flirtLines.length)];
-                    addMessage(`Larry: ${flirtLine}`, 'player', true);
+                    UIManager.addMessage(`Larry: ${flirtLine}`, 'player', true);
                     
                     setTimeout(() => {
-                        if (gameState.relationship > 40) {
+                        if (state.relationship > 40) {
                             const responses = [
                                 "*giggles* Smooth, very smooth.",
                                 "Okay, that was actually good.",
                                 "You're charming, I'll give you that.",
                                 "Keep talking like that and you might just get somewhere."
                             ];
-                            addMessage(`Eve: ${responses[Math.floor(Math.random() * responses.length)]}`, 'npc', true);
-                            gameState.mood += 15;
-                            gameState.relationship += 10;
-                            updateQuestProgress(6, 10); // Small progress for romantic evening
+                            UIManager.addMessage(`Eve: ${responses[Math.floor(Math.random() * responses.length)]}`, 'npc', true);
+                            const newMood = Math.min(100, state.mood + 15);
+                            const newRelationship = state.relationship + 10;
+                            GameState.setState({
+                                mood: newMood,
+                                relationship: newRelationship
+                            });
+                            QuestManager.updateQuestProgress(6, 10);
                         } else {
-                            addMessage('Eve: Seriously? Try harder.', 'npc');
-                            gameState.mood -= 10;
+                            UIManager.addMessage('Eve: Seriously? Try harder.', 'npc');
+                            const newMood = Math.max(0, state.mood - 10);
+                            GameState.setState({ mood: newMood });
                         }
-                        updateStats();
+                        UIManager.updateStats();
                     }, 500);
-                } else {
-                    showNotification('Flirt mode requires Adult Mode to be enabled!');
-                }
-            });
+                });
+                
+                UIManager.addEventListener('quest-info-btn', 'click', () => {
+                    const state = GameState.getState();
+                    const currentQuest = GameState.getCurrentQuest();
+                    const allQuests = GameState.getQuests();
+                    
+                    let info = `=== QUEST PROGRESS ===\n`;
+                    info += `Overall: ${state.progress}%\n`;
+                    info += `Quests Completed: ${state.questsCompleted}/${allQuests.length}\n\n`;
+                    
+                    info += `CURRENT QUEST:\n`;
+                    info += `→ ${currentQuest.name}\n`;
+                    info += `Progress: ${currentQuest.progress}%\n`;
+                    info += `Objective: ${currentQuest.objective || currentQuest.description}\n`;
+                    info += `Reward: ${currentQuest.reward} points\n\n`;
+                    
+                    info += `UPCOMING QUESTS:\n`;
+                    allQuests.forEach((quest, index) => {
+                        if (index >= state.currentQuest && index < state.currentQuest + 3) {
+                            const status = quest.completed ? '✓' : index === state.currentQuest ? '→' : '○';
+                            info += `${status} ${quest.name} ${quest.adult ? '(18+)' : ''}\n`;
+                        }
+                    });
+                    
+                    alert(info);
+                });
+                
+                UIManager.addEventListener('save-btn', 'click', () => {
+                    try {
+                        localStorage.setItem('larryGameSave', JSON.stringify(GameState.getState()));
+                        UIManager.showNotification('Game saved successfully!');
+                        GameState.addComment({
+                            npc: 'Eve',
+                            text: 'He saved the game. Not confident about his chances?',
+                            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                            adult: false
+                        });
+                        UIManager.renderComments();
+                    } catch (error) {
+                        UIManager.showNotification('Failed to save game!', 'error');
+                    }
+                });
+                
+                UIManager.addEventListener('load-btn', 'click', () => {
+                    try {
+                        const savedGame = localStorage.getItem('larryGameSave');
+                        if (savedGame) {
+                            GameState.setState(JSON.parse(savedGame));
+                            UIManager.updateStats();
+                            SceneManager.renderScene();
+                            SceneManager.renderMiniMap();
+                            InventoryManager.renderInventory();
+                            UIManager.showNotification('Game loaded successfully!');
+                            GameState.addComment({
+                                npc: 'Eve',
+                                text: 'He loaded a previous save. Trying to undo mistakes?',
+                                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                                adult: false
+                            });
+                            UIManager.renderComments();
+                        } else {
+                            UIManager.showNotification('No saved game found!', 'warning');
+                        }
+                    } catch (error) {
+                        UIManager.showNotification('Failed to load game!', 'error');
+                    }
+                });
+                
+                UIManager.addEventListener('reset-btn', 'click', () => {
+                    if (confirm('Are you sure you want to reset the game? All progress will be lost!')) {
+                        localStorage.removeItem('larryGameSave');
+                        location.reload();
+                    }
+                });
+                
+                // AI toggle
+                UIManager.addEventListener('ai-toggle', 'click', () => {
+                    const state = GameState.getState();
+                    const newAiMode = !state.aiMode;
+                    GameState.setState({ aiMode: newAiMode });
+                    UIManager.elements.aiStatus.textContent = `AI: ${newAiMode ? 'ON' : 'OFF'}`;
+                    UIManager.showNotification(`AI Mode ${newAiMode ? 'Enabled' : 'Disabled'}`);
+                });
+                
+                // Character interactions
+                UIManager.elements.playerCharacter.addEventListener('click', () => {
+                    UIManager.addMessage('Larry: *Adjusts his tie* Looking good!', 'player');
+                    GameState.addComment({
+                        npc: 'Eve',
+                        text: 'He\'s checking himself out. How vain.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: false
+                    });
+                    UIManager.renderComments();
+                });
+                
+                UIManager.elements.eveCharacter.addEventListener('click', () => {
+                    const state = GameState.getState();
+                    if (state.relationship > 50) {
+                        UIManager.addMessage('Eve: *smiles* Enjoying the view?', 'npc', true);
+                        const newMood = Math.min(100, state.mood + 5);
+                        GameState.setState({ mood: newMood });
+                        UIManager.updateStats();
+                    } else {
+                        UIManager.addMessage('Eve: Can I help you?', 'npc');
+                    }
+                });
+            };
             
-            // Quest info button
-            document.getElementById('quest-info-btn').addEventListener('click', showQuestInfo);
-            
-            document.getElementById('save-btn').addEventListener('click', () => {
-                localStorage.setItem('larryGameSave', JSON.stringify(gameState));
-                showNotification('Game saved successfully!');
-                addComment('Eve', 'He saved the game. Not confident about his chances?');
-            });
-            
-            document.getElementById('load-btn').addEventListener('click', () => {
-                const savedGame = localStorage.getItem('larryGameSave');
-                if (savedGame) {
-                    Object.assign(gameState, JSON.parse(savedGame));
-                    updateStats();
-                    renderScene();
-                    renderInventory();
-                    renderMiniMap();
-                    showNotification('Game loaded successfully!');
-                    addComment('Eve', 'He loaded a previous save. Trying to undo mistakes?');
-                } else {
-                    showNotification('No saved game found!');
-                }
-            });
-            
-            document.getElementById('reset-btn').addEventListener('click', () => {
-                if (confirm('Are you sure you want to reset the game? All progress will be lost!')) {
-                    localStorage.removeItem('larryGameSave');
-                    location.reload();
-                }
-            });
-            
-            // AI toggle
-            aiToggle.addEventListener('click', () => {
-                gameState.aiMode = !gameState.aiMode;
-                aiToggle.innerHTML = `<span>🤖 AI: ${gameState.aiMode ? 'ON' : 'OFF'}</span>`;
-                showNotification(`AI Mode ${gameState.aiMode ? 'Enabled' : 'Disabled'}`);
-            });
-            
-            // Character interactions
-            playerCharacter.addEventListener('click', () => {
-                addMessage('Larry: *Adjusts his tie* Looking good!', 'player');
-                addComment('Eve', 'He\'s checking himself out. How vain.');
-            });
-            
-            eveCharacter.addEventListener('click', () => {
-                if (gameState.relationship > 50) {
-                    addMessage('Eve: *smiles* Enjoying the view?', 'npc', true);
-                    gameState.mood += 5;
-                    updateStats();
-                } else {
-                    addMessage('Eve: Can I help you?', 'npc');
-                }
-            });
-            
-            // Add CSS for pulse animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes pulse {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(1.05); }
-                    100% { transform: scale(1); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
+            return {
+                init,
+                startGame
+            };
+        })();
+
+        // ===== INITIALIZE GAME =====
+        document.addEventListener('DOMContentLoaded', () => {
+            GameEngine.init();
+        });
+
+        // ===== ERROR HANDLING =====
+        window.addEventListener('error', (event) => {
+            console.error('Game error:', event.error);
+            UIManager.showNotification('A game error occurred. Please refresh.', 'error');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            UIManager.showNotification('A game error occurred. Please refresh.', 'error');
+        });
+
+        // ===== CLEANUP ON UNLOAD =====
+        window.addEventListener('beforeunload', () => {
+            UIManager.cleanupEventListeners();
+            clearInterval(GameEngine.gameTimer);
+        });
     </script>
 </body>
 </html>
