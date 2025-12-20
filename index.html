@@ -1279,7 +1279,7 @@
     <!-- Notification -->
     <div class="notification" id="notification" role="alert" aria-live="assertive"></div>
 
-    <script>
+<script>
         // ===== GAME MODULES =====
         const GameState = (() => {
             let state = {
@@ -1661,8 +1661,26 @@
                 const quest = quests.find(q => q.id === questId);
                 
                 if (quest && !quest.completed) {
+                    // FIXED: More flexible progress for attention quest
+                    let actualAmount = amount;
+                    
+                    if (questId === 1) { // "Get Eve's attention" quest
+                        const state = GameState.getState();
+                        const npc = GameState.getNPC('Eve');
+                        
+                        // Special conditions for completion
+                        if (npc && (npc.relationship > 40 || state.mood > 70)) {
+                            actualAmount = Math.max(amount, 30); // Boost progress
+                        }
+                        
+                        // Auto-complete if relationship is very high
+                        if (state.relationship > 50) {
+                            actualAmount = 100;
+                        }
+                    }
+                    
                     const oldProgress = quest.progress;
-                    quest.progress = Math.min(100, Math.max(0, quest.progress + amount));
+                    quest.progress = Math.min(100, Math.max(0, quest.progress + actualAmount));
                     
                     if (quest.progress !== oldProgress) {
                         UIManager.showNotification(`Quest Progress: ${quest.name} (${quest.progress}%)`);
@@ -1705,6 +1723,18 @@
                     updateOverallProgress();
                     UIManager.updateStats();
                     UIManager.updateQuestTracker();
+                    
+                    // Special celebration for attention quest
+                    if (questId === 1) {
+                        UIManager.addMessage('Eve: Well, you definitely have my attention now! What\'s next?', 'npc');
+                        GameState.addComment({
+                            npc: 'Eve',
+                            text: 'He actually did it. He got my full attention. Now I\'m curious...',
+                            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                            adult: false
+                        });
+                        UIManager.renderComments();
+                    }
                 }
             };
             
@@ -2114,6 +2144,10 @@
                     { text: "Offer a drink", mood: 5, relationship: 3, adult: 0, questId: 2, progress: 50 },
                     { text: "Tell a joke", mood: -5, relationship: 2, adult: 0 },
                     { text: "Ask about her interests", mood: 15, relationship: 8, adult: 0, questId: 1, progress: 20 },
+                    // FIXED: Added more attention-getting options
+                    { text: "Share a personal story", mood: 20, relationship: 12, adult: 0, questId: 1, progress: 25 },
+                    { text: "Make witty observation", mood: 15, relationship: 10, adult: 0, questId: 1, progress: 20 },
+                    { text: "Show genuine interest in her", mood: 25, relationship: 15, adult: 0, questId: 1, progress: 35 }
                 ];
                 
                 // Adult options
@@ -2209,6 +2243,25 @@
                         relationship: newRelationship,
                         score: newScore
                     });
+                    
+                    // FIXED: Enhanced quest progress for attention quest
+                    if (npcName === 'Eve') {
+                        // Give bonus progress for any successful interaction
+                        if (option.mood > 0 && option.relationship > 0) {
+                            QuestManager.updateQuestProgress(1, 10);
+                        }
+                        
+                        // Special boost when Eve acknowledges attention
+                        if (response.includes("full attention") || response.includes("my attention now")) {
+                            QuestManager.updateQuestProgress(1, 50);
+                            UIManager.showNotification("🏆 Eve is fully attentive!", "success");
+                        }
+                        
+                        // Bonus for high mood
+                        if (newMood > 70) {
+                            QuestManager.updateQuestProgress(1, 15);
+                        }
+                    }
                     
                     // Update NPC state
                     const npc = GameState.getNPC(npcName);
@@ -2365,6 +2418,11 @@
                     default:
                         moodChange = 5;
                         relationshipChange = 3;
+                }
+                
+                // FIXED: Also give progress for attention quest when using items successfully
+                if (moodChange > 0 && relationshipChange > 0) {
+                    QuestManager.updateQuestProgress(1, 15);
                 }
                 
                 setTimeout(() => {
@@ -2584,7 +2642,7 @@
                         adult: false
                     });
                     UIManager.renderComments();
-                    QuestManager.updateQuestProgress(1, 5);
+                    QuestManager.updateQuestProgress(1, 10); // FIXED: Increased from 5 to 10
                 });
                 
                 UIManager.addEventListener('flirt-btn', 'click', () => {
@@ -2621,6 +2679,8 @@
                                 relationship: newRelationship
                             });
                             QuestManager.updateQuestProgress(6, 10);
+                            // FIXED: Also give attention quest progress
+                            QuestManager.updateQuestProgress(1, 20);
                         } else {
                             UIManager.addMessage('Eve: Seriously? Try harder.', 'npc');
                             const newMood = Math.max(0, state.mood - 10);
@@ -2732,6 +2792,8 @@
                         const newMood = Math.min(100, state.mood + 5);
                         GameState.setState({ mood: newMood });
                         UIManager.updateStats();
+                        // FIXED: Give attention quest progress for successful character interaction
+                        QuestManager.updateQuestProgress(1, 5);
                     } else {
                         UIManager.addMessage('Eve: Can I help you?', 'npc');
                     }
