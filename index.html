@@ -1654,6 +1654,232 @@
             };
         })();
 
+        // ===== ENHANCED NPC AI SYSTEM =====
+        const NPCAI = (() => {
+            let aiMode = true; // Default to AI mode
+            
+            const responses = {
+                // AI Mode Responses (Dynamic)
+                ai_neutral: [
+                    "Interesting approach. Let's see where this goes.",
+                    "You're not like the others. I'll give you that.",
+                    "That was... unexpected.",
+                    "You certainly know how to get my attention.",
+                    "I'm listening. Continue."
+                ],
+                ai_positive: [
+                    "That's actually quite charming!",
+                    "You're making this difficult to resist.",
+                    "I'm starting to see your appeal.",
+                    "That was surprisingly sweet.",
+                    "Okay, you've got my full attention now."
+                ],
+                ai_negative: [
+                    "Seriously? That's your best line?",
+                    "I've had better conversations with a wall.",
+                    "You're trying too hard.",
+                    "That's not going to work on me.",
+                    "Maybe you should try a different approach."
+                ],
+                ai_adult: [
+                    "You're being quite forward... I like it.",
+                    "Now you're speaking my language.",
+                    "That's bold. Let's see if you can back it up.",
+                    "You have my attention... and my interest.",
+                    "Finally, someone who isn't afraid to be direct."
+                ],
+                ai_explicit: [
+                    "You're not shy, are you? I appreciate that.",
+                    "Let's take this somewhere more... private.",
+                    "I like where this is heading.",
+                    "You've definitely piqued my interest.",
+                    "Why don't you show me what you've got?"
+                ],
+                
+                // Simple Mode Responses (Static, predictable)
+                simple_neutral: [
+                    "I see.",
+                    "Okay.",
+                    "Hmm.",
+                    "Interesting.",
+                    "I understand."
+                ],
+                simple_positive: [
+                    "That's nice.",
+                    "Good to know.",
+                    "Thank you.",
+                    "That's interesting.",
+                    "I appreciate that."
+                ],
+                simple_negative: [
+                    "I disagree.",
+                    "No thank you.",
+                    "That's not for me.",
+                    "I'd rather not.",
+                    "Let's change the subject."
+                ],
+                simple_adult: [
+                    "That's inappropriate.",
+                    "Please be respectful.",
+                    "Let's keep it friendly.",
+                    "I prefer polite conversation.",
+                    "That's not appropriate here."
+                ]
+            };
+            
+            const setAIMode = (enabled) => {
+                aiMode = enabled;
+            };
+            
+            const getAIMode = () => aiMode;
+            
+            const getResponse = (mood, relationship, adultLevel = 0) => {
+                const state = GameState.getState();
+                let responseSet;
+                
+                if (aiMode) {
+                    // AI Mode: Dynamic, contextual responses
+                    if (relationship > 70 && adultLevel > 0 && state.adultMode) {
+                        responseSet = adultLevel > 5 ? responses.ai_explicit : responses.ai_adult;
+                    } else if (mood > 70) {
+                        responseSet = responses.ai_positive;
+                    } else if (mood > 40) {
+                        responseSet = responses.ai_neutral;
+                    } else {
+                        responseSet = responses.ai_negative;
+                    }
+                } else {
+                    // Simple Mode: Static, predictable responses
+                    if (adultLevel > 0 && state.adultMode) {
+                        responseSet = responses.simple_adult;
+                    } else if (mood > 60) {
+                        responseSet = responses.simple_positive;
+                    } else if (mood > 30) {
+                        responseSet = responses.simple_neutral;
+                    } else {
+                        responseSet = responses.simple_negative;
+                    }
+                }
+                
+                // Add some randomness
+                return responseSet[Math.floor(Math.random() * responseSet.length)];
+            };
+            
+            const generateComment = (npcName, adultLevel = 0) => {
+                const state = GameState.getState();
+                
+                if (aiMode) {
+                    // AI Mode: Contextual, varied comments
+                    const comments = [
+                        'He actually said something interesting for once.',
+                        'I might give him a chance if he keeps this up.',
+                        'Same old lines, different guy.',
+                        'There might be hope for him yet.',
+                        'I wonder if he knows how transparent he is.'
+                    ];
+                    
+                    if (adultLevel > 0 && state.adultMode) {
+                        comments.push(
+                            'He\'s being quite forward... I like that.',
+                            'Finally someone who isn\'t afraid to go there.',
+                            'This could get interesting...',
+                            'He knows what he wants, I\'ll give him that.',
+                            'Maybe tonight won\'t be so boring after all.'
+                        );
+                    }
+                    
+                    if (state.mood > 70) {
+                        comments.push('I\'m actually enjoying this conversation!');
+                        comments.push('He\'s not like the others...');
+                    } else if (state.mood < 30) {
+                        comments.push('How much longer do I have to pretend to be interested?');
+                        comments.push('This is getting painful to watch.');
+                    }
+                    
+                    if (state.relationship > 50) {
+                        comments.push('He\'s growing on me...');
+                    }
+                    
+                    return comments[Math.floor(Math.random() * comments.length)];
+                } else {
+                    // Simple Mode: Basic, predictable comments
+                    const simpleComments = [
+                        'He\'s talking to me.',
+                        'Another conversation.',
+                        'I should respond.',
+                        'What should I say?',
+                        'This is a conversation.'
+                    ];
+                    
+                    if (adultLevel > 0 && state.adultMode) {
+                        simpleComments.push('That was forward.');
+                        simpleComments.push('Direct approach.');
+                    }
+                    
+                    if (state.mood > 70) {
+                        simpleComments.push('Nice conversation.');
+                        simpleComments.push('Enjoying this.');
+                    } else if (state.mood < 30) {
+                        simpleComments.push('Not great.');
+                        simpleComments.push('Could be better.');
+                    }
+                    
+                    return simpleComments[Math.floor(Math.random() * simpleComments.length)];
+                }
+            };
+            
+            // Smart Conversation Logic (Only in AI Mode)
+            const generateSmartResponse = (playerInput, npcMood, npcRelationship) => {
+                if (!aiMode) return null; // Only works in AI mode
+                
+                const keywords = {
+                    compliment: ['beautiful', 'pretty', 'gorgeous', 'amazing', 'stunning', 'nice'],
+                    drink: ['drink', 'wine', 'cocktail', 'beer', 'beverage'],
+                    joke: ['joke', 'funny', 'humor', 'laugh'],
+                    interest: ['hobby', 'interest', 'like', 'enjoy', 'do for fun'],
+                    adult: ['private', 'room', 'bed', 'night', 'alone', 'intimate']
+                };
+                
+                const input = playerInput.toLowerCase();
+                
+                // Check for keywords
+                for (const [category, words] of Object.entries(keywords)) {
+                    if (words.some(word => input.includes(word))) {
+                        switch(category) {
+                            case 'compliment':
+                                if (npcMood > 60) {
+                                    return responses.ai_positive[Math.floor(Math.random() * responses.ai_positive.length)];
+                                } else {
+                                    return "Flattery will get you... well, maybe somewhere.";
+                                }
+                            case 'drink':
+                                if (npcMood > 40) {
+                                    return "A drink sounds lovely. What are you having?";
+                                } else {
+                                    return "I'm not really thirsty right now.";
+                                }
+                            case 'adult':
+                                if (npcRelationship > 60 && GameState.getState().adultMode) {
+                                    return responses.ai_adult[Math.floor(Math.random() * responses.ai_adult.length)];
+                                } else {
+                                    return "Let's take things slow.";
+                                }
+                        }
+                    }
+                }
+                
+                return null; // No smart response found
+            };
+            
+            return {
+                getResponse,
+                generateComment,
+                setAIMode,
+                getAIMode,
+                generateSmartResponse
+            };
+        })();
+
         // ===== QUEST MANAGER =====
         const QuestManager = (() => {
             const updateQuestProgress = (questId, amount) => {
@@ -2030,105 +2256,7 @@
             };
         })();
 
-        // ===== NPC AI SYSTEM =====
-        const NPCAI = (() => {
-            const responses = {
-                neutral: [
-                    "Interesting approach. Let's see where this goes.",
-                    "You're not like the others. I'll give you that.",
-                    "That was... unexpected.",
-                    "You certainly know how to get my attention.",
-                    "I'm listening. Continue."
-                ],
-                positive: [
-                    "That's actually quite charming!",
-                    "You're making this difficult to resist.",
-                    "I'm starting to see your appeal.",
-                    "That was surprisingly sweet.",
-                    "Okay, you've got my full attention now."
-                ],
-                negative: [
-                    "Seriously? That's your best line?",
-                    "I've had better conversations with a wall.",
-                    "You're trying too hard.",
-                    "That's not going to work on me.",
-                    "Maybe you should try a different approach."
-                ],
-                adult: [
-                    "You're being quite forward... I like it.",
-                    "Now you're speaking my language.",
-                    "That's bold. Let's see if you can back it up.",
-                    "You have my attention... and my interest.",
-                    "Finally, someone who isn't afraid to be direct."
-                ],
-                explicit: [
-                    "You're not shy, are you? I appreciate that.",
-                    "Let's take this somewhere more... private.",
-                    "I like where this is heading.",
-                    "You've definitely piqued my interest.",
-                    "Why don't you show me what you've got?"
-                ]
-            };
-            
-            const getResponse = (mood, relationship, adultLevel = 0) => {
-                const state = GameState.getState();
-                let responseSet;
-                
-                if (relationship > 70 && adultLevel > 0 && state.adultMode) {
-                    responseSet = adultLevel > 5 ? responses.explicit : responses.adult;
-                } else if (mood > 70) {
-                    responseSet = responses.positive;
-                } else if (mood > 40) {
-                    responseSet = responses.neutral;
-                } else {
-                    responseSet = responses.negative;
-                }
-                
-                return responseSet[Math.floor(Math.random() * responseSet.length)];
-            };
-            
-            const generateComment = (npcName, adultLevel = 0) => {
-                const state = GameState.getState();
-                const comments = [
-                    'He actually said something interesting for once.',
-                    'I might give him a chance if he keeps this up.',
-                    'Same old lines, different guy.',
-                    'There might be hope for him yet.',
-                    'I wonder if he knows how transparent he is.'
-                ];
-                
-                if (adultLevel > 0 && state.adultMode) {
-                    comments.push(
-                        'He\'s being quite forward... I like that.',
-                        'Finally someone who isn\'t afraid to go there.',
-                        'This could get interesting...',
-                        'He knows what he wants, I\'ll give him that.',
-                        'Maybe tonight won\'t be so boring after all.'
-                    );
-                }
-                
-                if (state.mood > 70) {
-                    comments.push('I\'m actually enjoying this conversation!');
-                    comments.push('He\'s not like the others...');
-                } else if (state.mood < 30) {
-                    comments.push('How much longer do I have to pretend to be interested?');
-                    comments.push('This is getting painful to watch.');
-                }
-                
-                if (state.relationship > 50) {
-                    comments.push('He\'s growing on me...');
-                }
-                
-                return comments[Math.floor(Math.random() * comments.length)];
-            };
-            
-            return {
-                getResponse,
-                generateComment
-            };
-        })();
-
-        // ===== DIALOG MANAGER =====
+        // ===== UPDATED DIALOG MANAGER =====
         const DialogManager = (() => {
             const updateDialogOptions = () => {
                 const dialogOptions = UIManager.elements.dialogOptions;
@@ -2144,11 +2272,18 @@
                     { text: "Offer a drink", mood: 5, relationship: 3, adult: 0, questId: 2, progress: 50 },
                     { text: "Tell a joke", mood: -5, relationship: 2, adult: 0 },
                     { text: "Ask about her interests", mood: 15, relationship: 8, adult: 0, questId: 1, progress: 20 },
-                    // FIXED: Added more attention-getting options
                     { text: "Share a personal story", mood: 20, relationship: 12, adult: 0, questId: 1, progress: 25 },
                     { text: "Make witty observation", mood: 15, relationship: 10, adult: 0, questId: 1, progress: 20 },
                     { text: "Show genuine interest in her", mood: 25, relationship: 15, adult: 0, questId: 1, progress: 35 }
                 ];
+                
+                // Smart option only in AI mode
+                if (NPCAI.getAIMode()) {
+                    options.push(
+                        { text: "Try a clever pickup line", mood: 15, relationship: 10, adult: 0, questId: 1, progress: 20, smart: true },
+                        { text: "Use psychology to connect", mood: 20, relationship: 12, adult: 0, questId: 1, progress: 25, smart: true }
+                    );
+                }
                 
                 // Adult options
                 if (state.adultMode && location?.adultAvailable && state.relationship > 40) {
@@ -2178,10 +2313,15 @@
                 // Create option elements
                 options.forEach((option, index) => {
                     const optionElement = document.createElement('div');
-                    optionElement.className = `dialog-option ${option.adult > 0 ? 'adult-option' : ''}`;
+                    optionElement.className = `dialog-option ${option.adult > 0 ? 'adult-option' : ''} ${option.smart ? 'ai-option' : ''}`;
                     optionElement.textContent = `${index + 1}. ${option.text}`;
                     optionElement.setAttribute('role', 'menuitem');
                     optionElement.tabIndex = 0;
+                    
+                    if (option.smart) {
+                        optionElement.style.border = '2px solid var(--primary)';
+                        optionElement.style.background = 'linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(142, 68, 173, 0.2))';
+                    }
                     
                     let disabled = false;
                     let disabledReason = '';
@@ -2198,6 +2338,9 @@
                     } else if (option.text.includes("perfume") && !state.inventory.includes('perfume')) {
                         disabled = true;
                         disabledReason = "You need perfume first!";
+                    } else if (option.smart && !NPCAI.getAIMode()) {
+                        disabled = true;
+                        disabledReason = "AI Mode required for smart options";
                     }
                     
                     if (disabled) {
@@ -2207,7 +2350,7 @@
                         optionElement.addEventListener('click', () => {
                             selectDialogOption(option, currentNPC);
                         });
-                        optionElement.title = option.questId ? "Advances quest progress" : "";
+                        optionElement.title = option.questId ? "Advances quest progress" : option.smart ? "Smart AI option" : "";
                     }
                     
                     dialogOptions.appendChild(optionElement);
@@ -2217,26 +2360,36 @@
             const selectDialogOption = (option, npcName) => {
                 UIManager.addMessage(`Larry: ${option.text}`, 'player', option.adult > 0);
                 
+                // Try smart response first if AI mode is on
+                let npcResponse = null;
+                if (NPCAI.getAIMode() && option.smart) {
+                    const state = GameState.getState();
+                    const npc = GameState.getNPC(npcName);
+                    npcResponse = NPCAI.generateSmartResponse(option.text, state.mood, npc?.relationship || 0);
+                }
+                
                 // Update quest progress
                 if (option.questId && option.progress) {
                     QuestManager.updateQuestProgress(option.questId, option.progress);
                 }
                 
-                // Generate AI response
+                // Generate response
                 setTimeout(() => {
-                    const response = NPCAI.getResponse(
-                        GameState.getState().mood,
-                        GameState.getState().relationship,
-                        option.adult
-                    );
+                    if (!npcResponse) {
+                        npcResponse = NPCAI.getResponse(
+                            GameState.getState().mood,
+                            GameState.getState().relationship,
+                            option.adult
+                        );
+                    }
                     
-                    UIManager.addMessage(`${npcName}: ${response}`, 'npc', option.adult > 0);
+                    UIManager.addMessage(`${npcName}: ${npcResponse}`, 'npc', option.adult > 0);
                     
                     // Update game state
                     const state = GameState.getState();
                     const newMood = Math.max(0, Math.min(100, state.mood + option.mood));
                     const newRelationship = state.relationship + option.relationship;
-                    const newScore = state.score + 25 + (option.adult * 10);
+                    const newScore = state.score + 25 + (option.adult * 10) + (option.smart ? 15 : 0);
                     
                     GameState.setState({
                         mood: newMood,
@@ -2244,15 +2397,15 @@
                         score: newScore
                     });
                     
-                    // FIXED: Enhanced quest progress for attention quest
+                    // Enhanced quest progress for attention quest
                     if (npcName === 'Eve') {
                         // Give bonus progress for any successful interaction
                         if (option.mood > 0 && option.relationship > 0) {
-                            QuestManager.updateQuestProgress(1, 10);
+                            QuestManager.updateQuestProgress(1, option.smart ? 15 : 10);
                         }
                         
                         // Special boost when Eve acknowledges attention
-                        if (response.includes("full attention") || response.includes("my attention now")) {
+                        if (npcResponse.includes("full attention") || npcResponse.includes("my attention now")) {
                             QuestManager.updateQuestProgress(1, 50);
                             UIManager.showNotification("🏆 Eve is fully attentive!", "success");
                         }
@@ -2477,6 +2630,9 @@
             const init = () => {
                 UIManager.initialize();
                 
+                // Initialize AI system with current state
+                NPCAI.setAIMode(GameState.getState().aiMode);
+                
                 // Age verification
                 document.getElementById('age-confirm').addEventListener('click', () => {
                     GameState.setState({
@@ -2529,11 +2685,19 @@
                     SceneManager.renderScene();
                     SceneManager.renderMiniMap();
                     InventoryManager.renderInventory();
-                    UIManager.addMessage('Eve: Another night, another hopeful romantic. Make it interesting.', 'npc');
+                    
+                    // Initial message based on AI mode
+                    if (NPCAI.getAIMode()) {
+                        UIManager.addMessage('Eve: Another night, another hopeful romantic. Make it interesting.', 'npc');
+                    } else {
+                        UIManager.addMessage('Eve: Hello there.', 'npc');
+                    }
                     
                     GameState.addComment({
                         npc: 'Eve',
-                        text: 'I wonder if this one will actually say something original for once.',
+                        text: NPCAI.getAIMode() ? 
+                            'I wonder if this one will actually say something original for once.' :
+                            'Someone is talking to me.',
                         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         adult: false
                     });
@@ -2578,7 +2742,9 @@
                     UIManager.addMessage('Larry: *Looks around the room*', 'player');
                     GameState.addComment({
                         npc: 'Eve',
-                        text: 'He\'s looking around like a lost puppy.',
+                        text: NPCAI.getAIMode() ? 
+                            'He\'s looking around like a lost puppy.' :
+                            'He\'s looking around.',
                         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         adult: false
                     });
@@ -2615,7 +2781,9 @@
                     
                     GameState.addComment({
                         npc: 'Eve',
-                        text: 'He moved to a different location. Persistent, I\'ll give him that.',
+                        text: NPCAI.getAIMode() ?
+                            'He moved to a different location. Persistent, I\'ll give him that.' :
+                            'He moved somewhere else.',
                         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         adult: false
                     });
@@ -2637,12 +2805,14 @@
                     UIManager.addMessage(`Larry: ${examineTexts[state.currentLocation] || "It's an interesting place."}`, 'player');
                     GameState.addComment({
                         npc: 'Eve',
-                        text: 'He\'s examining the surroundings. At least he\'s observant.',
+                        text: NPCAI.getAIMode() ?
+                            'He\'s examining the surroundings. At least he\'s observant.' :
+                            'He\'s looking at things.',
                         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         adult: false
                     });
                     UIManager.renderComments();
-                    QuestManager.updateQuestProgress(1, 10); // FIXED: Increased from 5 to 10
+                    QuestManager.updateQuestProgress(1, 10);
                 });
                 
                 UIManager.addEventListener('flirt-btn', 'click', () => {
@@ -2665,11 +2835,16 @@
                     
                     setTimeout(() => {
                         if (state.relationship > 40) {
-                            const responses = [
+                            const responses = NPCAI.getAIMode() ? [
                                 "*giggles* Smooth, very smooth.",
                                 "Okay, that was actually good.",
                                 "You're charming, I'll give you that.",
                                 "Keep talking like that and you might just get somewhere."
+                            ] : [
+                                "That's nice.",
+                                "Thank you.",
+                                "I appreciate that.",
+                                "That's interesting."
                             ];
                             UIManager.addMessage(`Eve: ${responses[Math.floor(Math.random() * responses.length)]}`, 'npc', true);
                             const newMood = Math.min(100, state.mood + 15);
@@ -2722,7 +2897,9 @@
                         UIManager.showNotification('Game saved successfully!');
                         GameState.addComment({
                             npc: 'Eve',
-                            text: 'He saved the game. Not confident about his chances?',
+                            text: NPCAI.getAIMode() ?
+                                'He saved the game. Not confident about his chances?' :
+                                'He saved the game.',
                             time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                             adult: false
                         });
@@ -2736,7 +2913,9 @@
                     try {
                         const savedGame = localStorage.getItem('larryGameSave');
                         if (savedGame) {
-                            GameState.setState(JSON.parse(savedGame));
+                            const savedState = JSON.parse(savedGame);
+                            GameState.setState(savedState);
+                            NPCAI.setAIMode(savedState.aiMode);
                             UIManager.updateStats();
                             SceneManager.renderScene();
                             SceneManager.renderMiniMap();
@@ -2744,7 +2923,9 @@
                             UIManager.showNotification('Game loaded successfully!');
                             GameState.addComment({
                                 npc: 'Eve',
-                                text: 'He loaded a previous save. Trying to undo mistakes?',
+                                text: NPCAI.getAIMode() ?
+                                    'He loaded a previous save. Trying to undo mistakes?' :
+                                    'Game loaded.',
                                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                                 adult: false
                             });
@@ -2764,13 +2945,38 @@
                     }
                 });
                 
-                // AI toggle
+                // Enhanced AI toggle
                 UIManager.addEventListener('ai-toggle', 'click', () => {
                     const state = GameState.getState();
                     const newAiMode = !state.aiMode;
                     GameState.setState({ aiMode: newAiMode });
+                    NPCAI.setAIMode(newAiMode);
+                    
                     UIManager.elements.aiStatus.textContent = `AI: ${newAiMode ? 'ON' : 'OFF'}`;
-                    UIManager.showNotification(`AI Mode ${newAiMode ? 'Enabled' : 'Disabled'}`);
+                    UIManager.elements.aiToggle.style.background = newAiMode ? 
+                        'linear-gradient(135deg, var(--primary), var(--primary-dark))' :
+                        'linear-gradient(135deg, var(--surface-light), var(--surface-dark))';
+                    
+                    // Show notification with mode details
+                    if (newAiMode) {
+                        UIManager.showNotification('🤖 AI Mode Enabled: NPCs use smart, contextual responses');
+                    } else {
+                        UIManager.showNotification('📝 Simple Mode: NPCs use basic, predictable responses');
+                    }
+                    
+                    // Update dialog options immediately
+                    DialogManager.updateDialogOptions();
+                    
+                    // Add NPC comment about the change
+                    GameState.addComment({
+                        npc: 'Eve',
+                        text: newAiMode ? 
+                            'My conversational AI just got an upgrade!' :
+                            'Switching to basic response mode.',
+                        time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                        adult: false
+                    });
+                    UIManager.renderComments();
                 });
                 
                 // Character interactions
@@ -2778,7 +2984,9 @@
                     UIManager.addMessage('Larry: *Adjusts his tie* Looking good!', 'player');
                     GameState.addComment({
                         npc: 'Eve',
-                        text: 'He\'s checking himself out. How vain.',
+                        text: NPCAI.getAIMode() ?
+                            'He\'s checking himself out. How vain.' :
+                            'He adjusted his tie.',
                         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                         adult: false
                     });
@@ -2788,11 +2996,15 @@
                 UIManager.elements.eveCharacter.addEventListener('click', () => {
                     const state = GameState.getState();
                     if (state.relationship > 50) {
-                        UIManager.addMessage('Eve: *smiles* Enjoying the view?', 'npc', true);
+                        if (NPCAI.getAIMode()) {
+                            UIManager.addMessage('Eve: *smiles* Enjoying the view?', 'npc', true);
+                        } else {
+                            UIManager.addMessage('Eve: Hello.', 'npc');
+                        }
                         const newMood = Math.min(100, state.mood + 5);
                         GameState.setState({ mood: newMood });
                         UIManager.updateStats();
-                        // FIXED: Give attention quest progress for successful character interaction
+                        // Give attention quest progress for successful character interaction
                         QuestManager.updateQuestProgress(1, 5);
                     } else {
                         UIManager.addMessage('Eve: Can I help you?', 'npc');
